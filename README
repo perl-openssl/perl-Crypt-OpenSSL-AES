@@ -1,5 +1,5 @@
 Perl module Crypt-OpenSSL-AES
-============------------=====
+=============================
 
 This is Crypt::OpenSSL::AES, an XS-wrapper around
 OpenSSL's AES (Advanced Encryption Standard) library.
