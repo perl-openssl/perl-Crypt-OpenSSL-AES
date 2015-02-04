@@ -67,11 +67,6 @@ This module is an alternative to the implementation provided by
 Crypt::Rijndael which implements AES itself. In contrast, this module
 is simply a wrapper around the OpenSSL library.
 
-The Crypt::Rijndael implementation seems to produce inaccurate
-results on 64-bit x86 machines. By using OpenSSL, this module
-aims to avoid architecture specific problems, allowing the OpenSSL
-maintainers to overcome such issues.
-
 =over 4
 
 =item $cipher->encrypt($data)
