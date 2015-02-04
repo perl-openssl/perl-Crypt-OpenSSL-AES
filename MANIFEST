@@ -1,10 +1,11 @@
 AES.xs
 Changes
+hints/MSWin32.pl
+lib/Crypt/OpenSSL/AES.pm
 Makefile.PL
 MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
 ppport.h
 README
-typemap
 t/Crypt-OpenSSL-AES.t
-lib/Crypt/OpenSSL/AES.pm
-META.yml                                 Module meta-data (added by MakeMaker)
+typemap
