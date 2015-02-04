@@ -1,0 +1,40 @@
+\B\.svn\b
+\B\.git\b
+\B\.gitignore\b
+
+\bMANIFEST\.bak
+^MANIFEST\.SKIP
+\bblib/
+\b_tmp/
+\b_generate/
+\bpm_to_blib/
+pm_to_blib
+\bMakefile$
+
+# Avoid temp and backup files.
+~$
+\.old$
+\#$
+\b\.#
+\.bak$
+\.tmp$
+\.#
+\.rej$
+\.o$
+\.obj$
+\.base$
+\.bs$
+\.def$
+\.exp$
+^tmp
+
+# Avoid configuration metadata file
+^MYMETA\.
+
+# Avoid archives of this distribution
+\bCrypt-OpenSSL-DSA-[\d\.\_]+
+
+AES.c
+
+^MYMETA\.json$
+^MYMETA\.yml$
