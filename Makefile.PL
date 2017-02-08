@@ -1,15 +1,35 @@
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+use Config;
+
+my $lib = '-lcrypto';
+my $inc = '';
+my $nul = $^O eq 'MSWin32' ? 'nul' : '/dev/null';
+if (my $dir = $ENV{OPENSSL_PREFIX}) {
+  $lib = "-L$dir/lib -lcrypto";
+  $inc = "-I$dir/include";
+}
+elsif ($ENV{OPENSSL_LIB}) {
+  $lib = $ENV{OPENSSL_LIB};
+  $inc = $ENV{OPENSSL_INCLUDE};
+}
+elsif (`pkg-config --modversion libcrypto 2>$nul`) {
+  $lib = `pkg-config --libs libcrypto 2> $nul`;
+  $inc = `pkg-config --cflags libcrypto 2> $nul`;
+}
+elsif ($^O eq 'MSWin32') {
+  $lib = '-llibeay32' if $Config{cc} =~ /cl/;
+  $lib = '-leay32'    if $Config{cc} =~ /gcc/;
+}
+
 WriteMakefile(
     NAME              => 'Crypt::OpenSSL::AES',
     VERSION_FROM      => 'lib/Crypt/OpenSSL/AES.pm', # finds $VERSION
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ABSTRACT_FROM     => 'lib/Crypt/OpenSSL/AES.pm',
     AUTHOR            => 'Tolga Tarhan',
-    LIBS              => ['-lcrypto'], # e.g., '-lm'
+    LIBS              => [ $lib ],
     DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
-    INC               => '-I.', # e.g., '-I. -I/usr/include/other'
+    INC               => "-I. $inc",
     MIN_PERL_VERSION  => '5.006002',
     META_MERGE        => {
       resources => {

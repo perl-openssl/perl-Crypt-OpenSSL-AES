@@ -1,5 +1,8 @@
 Revision history for Perl extension Crypt::OpenSSL::AES.
 
+0.04    2017/02/08
+        - Makefile.PL MSWin32 fix
+
 0.03    2015/02/04
         - fix for #77605 Win32 compatibility patch
         - fix for #22524 Module unnecessarily requires 5.8.5, works fine on 5.8.4
