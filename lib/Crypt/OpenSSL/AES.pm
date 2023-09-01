@@ -1,6 +1,6 @@
 package Crypt::OpenSSL::AES;
 
-# Copyright (C) 2006 DelTel, Inc.
+# Copyright (C) 2006 - 2023 DelTel, Inc.
 #
 # This library is free software; you can redistribute it and/or modify
 # it under the same terms as Perl itself, either Perl version 5.8.5 or,
@@ -139,7 +139,7 @@ Algorithm and was developed by Vincent Rijmen and Joan Daemen.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 DelTel, Inc.
+Copyright (C) 2006 - 2023 DelTel, Inc.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.5 or,
