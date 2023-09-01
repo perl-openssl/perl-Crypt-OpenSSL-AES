@@ -31,7 +31,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.06';
 
 require XSLoader;
 XSLoader::load('Crypt::OpenSSL::AES', $VERSION);

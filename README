@@ -1,7 +1,7 @@
-Crypt-OpenSSL-AES version 0.02
+Crypt-OpenSSL-AES version
 ==============================
 
-This is Crypt::OpenSSL::AES version 0.02, an XS-wrapper around
+This is Crypt::OpenSSL::AES version, an XS-wrapper around
 OpenSSL's AES (Advanced Encryption Standard) library.
 
 This module is an alternative to the implementation provided by
