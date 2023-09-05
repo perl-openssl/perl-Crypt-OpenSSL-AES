@@ -1,5 +1,23 @@
 Revision history for Perl extension Crypt::OpenSSL::AES.
 
+0.06 Tue Sep 05 20:41:28 2023
+
+    [Significant updates since last version]
+
+    Skipping versions 0.03 to 0.05 since they are unindexed versions
+
+    None. An initial release of 0.02 under a new maintainer.
+    A new release is planned to support openssl version 3 and
+    possibly address outstanding bugs.
+
+    [Detailed Changes]
+
+    - 5487408 Update some Makefile.PL settings and specify git repo
+    - 1b69f49 Update Copyright years
+    - 2858700 Increment version for release
+    - f584884 Reverse the order of the Changes file
+    - 324ae34 Create Git Repo for version 0.02
+
 0.02 Fri Nov 16 14:51:58 2007
 	- Fixed a memory leak reported by Sean Woolcock
 	- Specified prototyping behavior
