@@ -4,6 +4,7 @@
 
 #include <openssl/aes.h>
 
+#define NEED_newCONSTSUB
 #include "ppport.h"
 
 /*
