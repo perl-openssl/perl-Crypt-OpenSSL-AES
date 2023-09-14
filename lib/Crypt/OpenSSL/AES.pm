@@ -6,9 +6,11 @@ package Crypt::OpenSSL::AES;
 # it under the same terms as Perl itself, either Perl version 5.8.5 or,
 # at your option, any later version of Perl 5 you may have available.
 
-use 5.008005;
+use 5.008000;
 use strict;
 use warnings;
+
+our $VERSION = '0.08';
 
 require Exporter;
 
@@ -30,8 +32,6 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
 	
 );
-
-our $VERSION = '0.07';
 
 require XSLoader;
 XSLoader::load('Crypt::OpenSSL::AES', $VERSION);

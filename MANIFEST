@@ -1,10 +1,14 @@
 AES.xs
 Changes
+cpanfile
+dist.ini
+lib/Crypt/OpenSSL/AES.pm
+LICENSE
+maint/Makefile_header.PL
 Makefile.PL
 MANIFEST
+META.json
+META.yml
 ppport.h
-README
-typemap
 t/Crypt-OpenSSL-AES.t
-lib/Crypt/OpenSSL/AES.pm
-META.yml                                 Module meta-data (added by MakeMaker)
+typemap
