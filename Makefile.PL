@@ -23,9 +23,9 @@ $args{LIBS} = [openssl_lib_paths() . ' -lssl -lcrypto'];
 my $cc_option_flags;
 
 if ($Config::Config{cc} =~ /gcc/i) {
-  $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Werror' : ' -Wall';
+  $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Wpointer-sign' : ' -Wall';
 } else {
-  $cc_option_flags .= '';
+  $cc_option_flags .= $ENV{AUTHOR_TESTING} ? ' -Wall -Wpointer-sign' : '';
 }
 
 if ($Config{gccversion} =~ /llvm/i) {
