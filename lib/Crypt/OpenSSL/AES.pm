@@ -58,7 +58,8 @@ Crypt::OpenSSL::AES - A Perl wrapper around OpenSSL's AES library
 
 This module implements a wrapper around OpenSSL.  Specifically, it
 wraps the methods related to the US Government's Advanced
-Encryption Standard (the Rijndael algorithm).
+Encryption Standard (the Rijndael algorithm).  The original version
+supports only AES 256 ECB (electronic codebook mode encryption).
 
 This module is compatible with Crypt::CBC (and likely other modules
 that utilize a block cipher to make a stream cipher).
@@ -100,16 +101,18 @@ The blocksize for AES is always 16 bytes.
 
 =head2 USE WITH CRYPT::CBC
 
-	use Crypt::CBC
+	use Crypt::CBC;
 
-	$cipher = Crypt::CBC->new(
-		-key    => $key,
-		-cipher => "Crypt::OpenSSL::AES"
-	);             
+	my $plaintext = "This is a test!!";
+	my $password = "qwerty123";
+	my $cipher = Crypt::CBC->new(
+		-key    => $password,
+		-cipher => "Crypt::OpenSSL::AES",
+		-pbkdf  => 'pbkdf2',
+	);
 
-	$encrypted = $cipher->encrypt($plaintext)
-	$decrypted = $cipher->decrypt($encrypted)
-
+	my $encrypted = $cipher->encrypt($plaintext);
+	my $decrypted = $cipher->decrypt($encrypted);
 
 =head1 SEE ALSO
 
