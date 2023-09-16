@@ -41,17 +41,20 @@ BOOT:
 }
 
 Crypt::OpenSSL::AES
-new(class, key)
+new(class, key_sv)
 	SV *  class
-	SV *  key
+	SV *  key_sv
 CODE:
 	{
 		STRLEN keysize;
+        unsigned char * key;
+        SV * self;
 
-		if (!SvPOK (key))
+		if (!SvPOK (key_sv))
 			croak("Key must be a scalar");
 
-		keysize = SvCUR(key);
+        key = (unsigned char *) SvPVbyte_nolen(key_sv);
+		keysize = SvCUR(key_sv);
 
 		if (keysize != 16 && keysize != 24 && keysize != 32)
 			croak ("The key must be 128, 192 or 256 bits long");
@@ -66,15 +69,15 @@ CODE:
 			croak ("EVP_CIPHER_CTX_new failed for dec_ctx");
 
 		if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, EVP_aes_256_ecb(),
-                                        NULL, SvPVbyte_nolen(key), NULL))
+                                        NULL, key, NULL))
 			croak ("EVP_EncryptInit_ex failed");
 
 		if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, EVP_aes_256_ecb(),
-                                        NULL, SvPVbyte_nolen(key), NULL))
+                                        NULL, key, NULL))
 			croak ("EVP_DecryptInit_ex failed");
 #else
-		AES_set_encrypt_key(SvPV_nolen(key),keysize*8,&RETVAL->enc_key);
-		AES_set_decrypt_key(SvPV_nolen(key),keysize*8,&RETVAL->dec_key);
+		AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
+		AES_set_decrypt_key(key,keysize*8,&RETVAL->dec_key);
 #endif
 	}
 OUTPUT:
@@ -87,12 +90,13 @@ encrypt(self, data)
 CODE:
 	{
 		STRLEN size;
+		unsigned char * plaintext = (unsigned char *) SvPVbyte(data,size);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 		int out_len = 0;
 		int ciphertext_len = 0;
 		unsigned char * ciphertext;
-		unsigned char * plaintext = SvPVbyte(data,size);
-
 		Newc(1, ciphertext, size, unsigned char, unsigned char);
+#endif
 
 		if (size)
 		{
@@ -112,10 +116,10 @@ CODE:
 			if(1 != EVP_EncryptFinal_ex(self->enc_ctx, ciphertext + out_len, &out_len))
 				croak("EVP_%sFinal_ex failed", "Encrypt");
 
-			sv_setpvn(RETVAL, ciphertext, ciphertext_len);
+			sv_setpvn(RETVAL, (const char * const) ciphertext, ciphertext_len);
 			Safefree(ciphertext);
 #else
-			AES_encrypt((unsigned char *) plaintext, SvPV_nolen(RETVAL), &self->enc_key);
+			AES_encrypt(plaintext, (unsigned char *) SvPV_nolen(RETVAL), &self->enc_key);
 #endif
 		}
 		else
@@ -133,12 +137,13 @@ decrypt(self, data)
 CODE:
 	{
 		STRLEN size;
+		unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 		int out_len = 0;
 		int plaintext_len = 0;
 		unsigned char * plaintext;
-		unsigned char * ciphertext = SvPVbyte(data,size);
-
 		Newc(1, plaintext, size, unsigned char, unsigned char);
+#endif
 
 		if (size)
 		{
@@ -157,10 +162,10 @@ CODE:
 			if(1 != EVP_DecryptFinal_ex(self->dec_ctx, plaintext + out_len, &out_len))
 				croak("EVP_%sFinal_ex failed", "Decrypt");
 
-			sv_setpvn(RETVAL, plaintext, plaintext_len);
+			sv_setpvn(RETVAL, (const char * const) plaintext, plaintext_len);
 			Safefree(plaintext);
 #else
-			AES_decrypt((unsigned char *) ciphertext, SvPV_nolen(RETVAL), &self->dec_key);
+			AES_decrypt(ciphertext, (unsigned char *) SvPV_nolen(RETVAL), &self->dec_key);
 #endif
 		}
 		else
