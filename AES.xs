@@ -12,7 +12,7 @@
 
 /*
 *  Copyright (C) 2006-2023 DelTel, Inc.
-*  
+*
 *  This library is free software; you can redistribute it and/or modify
 *  it under the same terms as Perl itself, either Perl version 5.8.5 or,
 *  at your option, any later version of Perl 5 you may have available.
@@ -20,168 +20,168 @@
 
 typedef struct state {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	EVP_CIPHER_CTX *enc_ctx;
-	EVP_CIPHER_CTX *dec_ctx;
+    EVP_CIPHER_CTX *enc_ctx;
+    EVP_CIPHER_CTX *dec_ctx;
 #else
-	AES_KEY enc_key;
-	AES_KEY dec_key;
+    AES_KEY enc_key;
+    AES_KEY dec_key;
 #endif
 } *Crypt__OpenSSL__AES;
 
-MODULE = Crypt::OpenSSL::AES		PACKAGE = Crypt::OpenSSL::AES		
+MODULE = Crypt::OpenSSL::AES        PACKAGE = Crypt::OpenSSL::AES
 
 PROTOTYPES: ENABLE
 
 BOOT:
 {
-	HV *stash = gv_stashpv("Crypt::OpenSSL::AES", 0);
+    HV *stash = gv_stashpv("Crypt::OpenSSL::AES", 0);
 
-	newCONSTSUB (stash, "keysize",   newSViv (32));
-	newCONSTSUB (stash, "blocksize", newSViv (AES_BLOCK_SIZE));
+    newCONSTSUB (stash, "keysize",   newSViv (32));
+    newCONSTSUB (stash, "blocksize", newSViv (AES_BLOCK_SIZE));
 }
 
 Crypt::OpenSSL::AES
 new(class, key_sv)
-	SV *  class
-	SV *  key_sv
+    SV *  class
+    SV *  key_sv
 CODE:
-	{
-		STRLEN keysize;
+    {
+        STRLEN keysize;
         unsigned char * key;
         SV * self;
 
-		if (!SvPOK (key_sv))
-			croak("Key must be a scalar");
+        if (!SvPOK (key_sv))
+            croak("Key must be a scalar");
 
         key = (unsigned char *) SvPVbyte_nolen(key_sv);
-		keysize = SvCUR(key_sv);
+        keysize = SvCUR(key_sv);
 
-		if (keysize != 16 && keysize != 24 && keysize != 32)
-			croak ("The key must be 128, 192 or 256 bits long");
+        if (keysize != 16 && keysize != 24 && keysize != 32)
+            croak ("The key must be 128, 192 or 256 bits long");
 
-		Newz(0, RETVAL, 1, struct state);
+        Newz(0, RETVAL, 1, struct state);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-		/* Create and initialise the context */
-		if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new()))
-			croak ("EVP_CIPHER_CTX_new failed for enc_ctx");
+        /* Create and initialise the context */
+        if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new()))
+            croak ("EVP_CIPHER_CTX_new failed for enc_ctx");
 
-		if(!(RETVAL->dec_ctx = EVP_CIPHER_CTX_new()))
-			croak ("EVP_CIPHER_CTX_new failed for dec_ctx");
+        if(!(RETVAL->dec_ctx = EVP_CIPHER_CTX_new()))
+            croak ("EVP_CIPHER_CTX_new failed for dec_ctx");
 
-		if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, EVP_aes_256_ecb(),
+        if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, EVP_aes_256_ecb(),
                                         NULL, key, NULL))
-			croak ("EVP_EncryptInit_ex failed");
+            croak ("EVP_EncryptInit_ex failed");
 
-		if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, EVP_aes_256_ecb(),
+        if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, EVP_aes_256_ecb(),
                                         NULL, key, NULL))
-			croak ("EVP_DecryptInit_ex failed");
+            croak ("EVP_DecryptInit_ex failed");
 #else
-		AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
-		AES_set_decrypt_key(key,keysize*8,&RETVAL->dec_key);
+        AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
+        AES_set_decrypt_key(key,keysize*8,&RETVAL->dec_key);
 #endif
-	}
+    }
 OUTPUT:
-	RETVAL
+    RETVAL
 
 SV *
 encrypt(self, data)
-	Crypt::OpenSSL::AES self
-	SV *data
+    Crypt::OpenSSL::AES self
+    SV *data
 CODE:
-	{
-		STRLEN size;
-		unsigned char * plaintext = (unsigned char *) SvPVbyte(data,size);
+    {
+        STRLEN size;
+        unsigned char * plaintext = (unsigned char *) SvPVbyte(data,size);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-		int out_len = 0;
-		int ciphertext_len = 0;
-		unsigned char * ciphertext;
-		Newc(1, ciphertext, size, unsigned char, unsigned char);
+        int out_len = 0;
+        int ciphertext_len = 0;
+        unsigned char * ciphertext;
+        Newc(1, ciphertext, size, unsigned char, unsigned char);
 #endif
 
-		if (size)
-		{
-			if (size != AES_BLOCK_SIZE)
-				croak ("AES: Datasize not exactly blocksize (%d bytes)", AES_BLOCK_SIZE);
+        if (size)
+        {
+            if (size != AES_BLOCK_SIZE)
+                croak ("AES: Datasize not exactly blocksize (%d bytes)", AES_BLOCK_SIZE);
 
-			RETVAL = newSV (size);
-			SvPOK_only (RETVAL);
-			SvCUR_set (RETVAL, size);
+            RETVAL = newSV (size);
+            SvPOK_only (RETVAL);
+            SvCUR_set (RETVAL, size);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-			EVP_CIPHER_CTX_set_padding(self->enc_ctx, 0);
+            EVP_CIPHER_CTX_set_padding(self->enc_ctx, 0);
 
-			if(1 != EVP_EncryptUpdate(self->enc_ctx, ciphertext, &out_len, plaintext, size))
-				croak("EVP_%sUpdate failed", "Encrypt");
-			ciphertext_len += out_len;
+            if(1 != EVP_EncryptUpdate(self->enc_ctx, ciphertext, &out_len, plaintext, size))
+                croak("EVP_%sUpdate failed", "Encrypt");
+            ciphertext_len += out_len;
 
-			if(1 != EVP_EncryptFinal_ex(self->enc_ctx, ciphertext + out_len, &out_len))
-				croak("EVP_%sFinal_ex failed", "Encrypt");
+            if(1 != EVP_EncryptFinal_ex(self->enc_ctx, ciphertext + out_len, &out_len))
+                croak("EVP_%sFinal_ex failed", "Encrypt");
 
-			sv_setpvn(RETVAL, (const char * const) ciphertext, ciphertext_len);
-			Safefree(ciphertext);
+            sv_setpvn(RETVAL, (const char * const) ciphertext, ciphertext_len);
+            Safefree(ciphertext);
 #else
-			AES_encrypt(plaintext, (unsigned char *) SvPV_nolen(RETVAL), &self->enc_key);
+            AES_encrypt(plaintext, (unsigned char *) SvPV_nolen(RETVAL), &self->enc_key);
 #endif
-		}
-		else
-		{
-			RETVAL = newSVpv ("", 0);
-		}
-	}
+        }
+        else
+        {
+            RETVAL = newSVpv ("", 0);
+        }
+    }
 OUTPUT:
-	RETVAL
+    RETVAL
 
 SV *
 decrypt(self, data)
-	Crypt::OpenSSL::AES self
-	SV *data
+    Crypt::OpenSSL::AES self
+    SV *data
 CODE:
-	{
-		STRLEN size;
-		unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
+    {
+        STRLEN size;
+        unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-		int out_len = 0;
-		int plaintext_len = 0;
-		unsigned char * plaintext;
-		Newc(1, plaintext, size, unsigned char, unsigned char);
+        int out_len = 0;
+        int plaintext_len = 0;
+        unsigned char * plaintext;
+        Newc(1, plaintext, size, unsigned char, unsigned char);
 #endif
 
-		if (size)
-		{
-			if (size != AES_BLOCK_SIZE)
-				croak ("AES: Datasize not exactly blocksize (%d bytes)", AES_BLOCK_SIZE);
+        if (size)
+        {
+            if (size != AES_BLOCK_SIZE)
+                croak ("AES: Datasize not exactly blocksize (%d bytes)", AES_BLOCK_SIZE);
 
-			RETVAL = newSV (size);
-			SvPOK_only (RETVAL);
-			SvCUR_set (RETVAL, size);
+            RETVAL = newSV (size);
+            SvPOK_only (RETVAL);
+            SvCUR_set (RETVAL, size);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-			EVP_CIPHER_CTX_set_padding(self->dec_ctx, 0);
-			if (1 != EVP_DecryptUpdate(self->dec_ctx, plaintext, &out_len, ciphertext, size))
-				croak("EVP_%sUpdate failed", "Decrypt");
-			plaintext_len = out_len;
+            EVP_CIPHER_CTX_set_padding(self->dec_ctx, 0);
+            if (1 != EVP_DecryptUpdate(self->dec_ctx, plaintext, &out_len, ciphertext, size))
+                croak("EVP_%sUpdate failed", "Decrypt");
+            plaintext_len = out_len;
 
-			if(1 != EVP_DecryptFinal_ex(self->dec_ctx, plaintext + out_len, &out_len))
-				croak("EVP_%sFinal_ex failed", "Decrypt");
+            if(1 != EVP_DecryptFinal_ex(self->dec_ctx, plaintext + out_len, &out_len))
+                croak("EVP_%sFinal_ex failed", "Decrypt");
 
-			sv_setpvn(RETVAL, (const char * const) plaintext, plaintext_len);
-			Safefree(plaintext);
+            sv_setpvn(RETVAL, (const char * const) plaintext, plaintext_len);
+            Safefree(plaintext);
 #else
-			AES_decrypt(ciphertext, (unsigned char *) SvPV_nolen(RETVAL), &self->dec_key);
+            AES_decrypt(ciphertext, (unsigned char *) SvPV_nolen(RETVAL), &self->dec_key);
 #endif
-		}
-		else
-		{
-			RETVAL = newSVpv ("", 0);
-		}
-	}
+        }
+        else
+        {
+            RETVAL = newSVpv ("", 0);
+        }
+    }
 OUTPUT:
-	RETVAL
+    RETVAL
 
 void
 DESTROY(self)
-	Crypt::OpenSSL::AES self
+    Crypt::OpenSSL::AES self
 CODE:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	Safefree(self->enc_ctx);
-	Safefree(self->dec_ctx);
+    Safefree(self->enc_ctx);
+    Safefree(self->dec_ctx);
 #endif
-	Safefree(self);
+    Safefree(self);
