@@ -1,5 +1,19 @@
 Revision history for Perl extension Crypt::OpenSSL::AES.
 
+{{$NEXT}}
+
+0.08 -- Sat Sep 16 00:19:13 ADT 2023
+
+    [Detailed Changes]
+
+    - ff164da Change the push to repo
+    - 98b92f8 Create a test for Crypt::CBC
+    - ad9094f Update pod information
+    - 9230b98 Fix casting and signedness errors
+    - 4434d5c Convert build to Dist::Zilla
+    - 1f9d13b Increment version for a release
+    - 9b539b4 Update Changes for release
+
 0.07 Thu Sep 14 18:41:23 PM 2023
 
     [Significant updates since 0.02]
