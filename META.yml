@@ -3,6 +3,7 @@ abstract: "A Perl wrapper around OpenSSL's AES library"
 author:
   - 'Tolga Tarhan <cpan at ttar dot org>'
 build_requires:
+  Crypt::CBC: '0'
   Crypt::OpenSSL::Guess: '0'
   Test::More: '0'
 configure_requires:

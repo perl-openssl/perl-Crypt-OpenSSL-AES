@@ -72,6 +72,7 @@ my %WriteMakefileArgs = (
     "XSLoader" => 0
   },
   "TEST_REQUIRES" => {
+    "Crypt::CBC" => 0,
     "Test::More" => 0
   },
   "VERSION" => "0.08",
@@ -86,6 +87,7 @@ my %WriteMakefileArgs = (
 );
 
 my %FallbackPrereqs = (
+  "Crypt::CBC" => 0,
   "Crypt::OpenSSL::Guess" => 0,
   "Exporter" => 0,
   "Test::More" => 0,

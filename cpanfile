@@ -10,6 +10,7 @@ on 'build' => sub {
 };
 
 on 'test' => sub {
+  requires "Crypt::CBC" => "0";
   requires "Test::More" => "0";
 };
 
