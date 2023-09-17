@@ -7,10 +7,24 @@ Crypt::OpenSSL::AES - A Perl wrapper around OpenSSL's AES library
 ```perl
  use Crypt::OpenSSL::AES;
 
- my $cipher = new Crypt::OpenSSL::AES($key);
+ my $cipher = Crypt::OpenSSL::AES->new($key);
 
- $encrypted = $cipher->encrypt($plaintext)
- $decrypted = $cipher->decrypt($encrypted)
+ or
+
+ # Pick better keys and iv...
+ my $key = pack("H*", substr(sha512_256_hex(rand(1000)), 0, ($ks/4)));
+ my $iv  = pack("H*", substr(sha512_256_hex(rand(1000)), 0, 32));
+ my $cipher = Crypt::OpenSSL::AES->new(
+                                        $key,
+                                        {
+                                            cipher => 'AES-256-CBC',
+                                            iv      => $iv, (16-bytes for supported ciphers)
+                                            padding => 1, (0 - no padding, 1 - padding)
+                                        }
+                                    );
+
+ $encrypted = $cipher->encrypt($plaintext);
+ $decrypted = $cipher->decrypt($encrypted);
 ```
 
 # DESCRIPTION
@@ -23,9 +37,62 @@ supports only AES 256 ECB (electronic codebook mode encryption).
 This module is compatible with Crypt::CBC (and likely other modules
 that utilize a block cipher to make a stream cipher).
 
-This module is an alternative to the implementation provided by 
+This module is an alternative to the implementation provided by
 Crypt::Rijndael which implements AES itself. In contrast, this module
 is simply a wrapper around the OpenSSL library.
+
+As of version 0.09 additional AES ciphers are supported.  Those are:
+
+- AES-128-ECB, AES-192-ECB and AES-256-ECB (no IV)
+
+    Supports padding
+
+- AES-128-CBC, AES-192-CBC and AES-256-CBC
+
+    Supports padding and iv
+
+- AES-128-CFB, AES-192-CFB and AES-256-CFB
+
+    Supports padding and iv
+
+- AES-128-CTR, AES-192-CTR and AES-256-CTR
+
+    Supports padding and iv
+
+- AES-128-OFB, AES-192-OFB and AES-256-OFB
+
+    Supports padding and iv
+
+- new()
+
+    For compatibility with old versions you can simply pass the key to the
+    new constructor.
+
+    ```perl
+    my $cipher = Crypt::OpenSSL::AES->new($key);
+
+    or
+
+    my $cipher = Crypt::OpenSSL::AES->new($key,
+                    {
+                        cipher  => 'AES-256-CBC',
+                        iv      => $iv, (16-bytes for supported ciphers)
+                        padding => 1, (0 - no padding, 1 - padding)
+                    });
+
+    # cipher
+    #   AES-128-ECB, AES-192-ECB and AES-256-ECB (no IV)
+    #   AES-128-CBC, AES-192-CBC and AES-256-CBC
+    #   AES-128-CFB, AES-192-CFB and AES-256-CFB
+    #   AES-128-CTR, AES-192-CTR and AES-256-CTR
+    #   AES-128-OFB, AES-192-OFB and AES-256-OFB
+    #
+    # iv - 16-byte random data
+    #
+    # padding
+    #   0 - no padding
+    #   1 - padding
+    ```
 
 - $cipher->encrypt($data)
 
@@ -52,7 +119,7 @@ is simply a wrapper around the OpenSSL library.
 - blocksize
 
     This method is used by Crypt::CBC to check the block size.
-    The blocksize for AES is always 16 bytes. 
+    The blocksize for AES is always 16 bytes.
 
 ## USE WITH CRYPT::CBC
 

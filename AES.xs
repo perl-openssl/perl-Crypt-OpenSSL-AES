@@ -22,11 +22,73 @@ typedef struct state {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
     EVP_CIPHER_CTX *enc_ctx;
     EVP_CIPHER_CTX *dec_ctx;
+    int padding;
 #else
     AES_KEY enc_key;
     AES_KEY dec_key;
+    int padding;
 #endif
 } *Crypt__OpenSSL__AES;
+
+int get_option_ivalue (HV * options, char * name) {
+    SV **svp;
+    IV value;
+
+    if (hv_exists(options, name, strlen(name))) {
+        svp = hv_fetch(options, name, strlen(name), 0);
+        if (SvIOKp(*svp)) {
+            value = SvIV(*svp);
+            return PTR2IV(value);
+        }
+    }
+    return 0;
+}
+
+char * get_option_svalue (HV * options, char * name) {
+    SV **svp;
+    SV * value;
+
+    if (hv_exists(options, name, strlen(name))) {
+        svp = hv_fetch(options, name, strlen(name), 0);
+        value = *svp;
+        return SvPV_nolen(value);
+    }
+
+    return NULL;
+}
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+EVP_CIPHER * get_cipher(HV * options) {
+    char * name = get_option_svalue(options, "cipher");
+    if (name == NULL)
+        name = "AES-256-ECB";
+
+    return EVP_CIPHER_fetch(NULL, name, NULL);
+}
+#endif
+
+char * get_cipher_name (HV * options) {
+    char * value = get_option_svalue(options, "cipher");
+    if (value == NULL)
+        return "AES-256-ECB";
+
+    return value;
+}
+
+unsigned char * get_iv(HV * options) {
+    return (unsigned char * ) get_option_svalue(options, "iv");
+}
+
+int get_padding(HV * options) {
+    return get_option_ivalue(options, "padding");
+}
+
+// Taken from p5-Git-Raw
+STATIC HV *ensure_hv(SV *sv, const char *identifier) {
+    if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)
+    croak("Invalid type for '%s', expected a hash", identifier);
+
+    return (HV *) SvRV(sv);
+}
 
 MODULE = Crypt::OpenSSL::AES        PACKAGE = Crypt::OpenSSL::AES
 
@@ -41,7 +103,7 @@ BOOT:
 }
 
 Crypt::OpenSSL::AES
-new(class, key_sv)
+new(class, key_sv, ...)
     SV *  class
     SV *  key_sv
 CODE:
@@ -49,6 +111,14 @@ CODE:
         STRLEN keysize;
         unsigned char * key;
         SV * self;
+        HV * options = newHV();
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        EVP_CIPHER * cipher;
+        unsigned char * iv = NULL;
+        char * cipher_name = NULL;
+#endif
+        if (items > 2)
+            options = ensure_hv(ST(2), "options");
 
         if (!SvPOK (key_sv))
             croak("Key must be a scalar");
@@ -60,7 +130,17 @@ CODE:
             croak ("The key must be 128, 192 or 256 bits long");
 
         Newz(0, RETVAL, 1, struct state);
+        RETVAL->padding = get_padding(options);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+        cipher = get_cipher(options);
+        iv = get_iv(options);
+        cipher_name = get_cipher_name(options);
+        if ((strcmp(cipher_name, "AES-128-ECB") == 0 ||
+            strcmp(cipher_name, "AES-192-ECB") == 0 ||
+            strcmp(cipher_name, "AES-256-ECB") == 0)
+            && hv_exists(options, "iv", strlen("iv")))
+                croak ("%s does not use IV", cipher_name);
+
         /* Create and initialise the context */
         if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new()))
             croak ("EVP_CIPHER_CTX_new failed for enc_ctx");
@@ -68,12 +148,12 @@ CODE:
         if(!(RETVAL->dec_ctx = EVP_CIPHER_CTX_new()))
             croak ("EVP_CIPHER_CTX_new failed for dec_ctx");
 
-        if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, EVP_aes_256_ecb(),
-                                        NULL, key, NULL))
+        if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, cipher,
+                                        NULL, key, iv))
             croak ("EVP_EncryptInit_ex failed");
 
-        if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, EVP_aes_256_ecb(),
-                                        NULL, key, NULL))
+        if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, cipher,
+                                        NULL, key, iv))
             croak ("EVP_DecryptInit_ex failed");
 #else
         AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
@@ -95,30 +175,35 @@ CODE:
         int out_len = 0;
         int ciphertext_len = 0;
         unsigned char * ciphertext;
-        Newc(1, ciphertext, size, unsigned char, unsigned char);
+        Newc(1, ciphertext, size + AES_BLOCK_SIZE, unsigned char, unsigned char);
 #endif
 
         if (size)
         {
-            if (size != AES_BLOCK_SIZE)
-                croak ("AES: Datasize not exactly blocksize (%d bytes)", AES_BLOCK_SIZE);
-
-            RETVAL = newSV (size);
-            SvPOK_only (RETVAL);
-            SvCUR_set (RETVAL, size);
+            if ((size % AES_BLOCK_SIZE != 0) && self->padding != 1)
+                croak ("AES: Data size must be multiple of blocksize (%d bytes)", AES_BLOCK_SIZE);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-            EVP_CIPHER_CTX_set_padding(self->enc_ctx, 0);
+            EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
-            if(1 != EVP_EncryptUpdate(self->enc_ctx, ciphertext, &out_len, plaintext, size))
+            if(1 != EVP_EncryptUpdate(self->enc_ctx, ciphertext , &out_len, plaintext, size))
                 croak("EVP_%sUpdate failed", "Encrypt");
+
             ciphertext_len += out_len;
 
-            if(1 != EVP_EncryptFinal_ex(self->enc_ctx, ciphertext + out_len, &out_len))
+            if(1 != EVP_EncryptFinal_ex(self->enc_ctx, ciphertext + ciphertext_len, &out_len))
                 croak("EVP_%sFinal_ex failed", "Encrypt");
 
+            ciphertext_len += out_len;
+
+            RETVAL = newSV (ciphertext_len);
+            SvPOK_only (RETVAL);
+            SvCUR_set (RETVAL, ciphertext_len);
             sv_setpvn(RETVAL, (const char * const) ciphertext, ciphertext_len);
             Safefree(ciphertext);
 #else
+            RETVAL = newSV (size);
+            SvPOK_only (RETVAL);
+            SvCUR_set (RETVAL, size);
             AES_encrypt(plaintext, (unsigned char *) SvPV_nolen(RETVAL), &self->enc_key);
 #endif
         }
@@ -144,27 +229,31 @@ CODE:
         unsigned char * plaintext;
         Newc(1, plaintext, size, unsigned char, unsigned char);
 #endif
-
         if (size)
         {
-            if (size != AES_BLOCK_SIZE)
-                croak ("AES: Datasize not exactly blocksize (%d bytes)", AES_BLOCK_SIZE);
-
-            RETVAL = newSV (size);
-            SvPOK_only (RETVAL);
-            SvCUR_set (RETVAL, size);
+            if ((size % AES_BLOCK_SIZE != 0) && self->padding != 1)
+                croak ("AES: Data size must be multiple of blocksize (%d bytes)", AES_BLOCK_SIZE);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-            EVP_CIPHER_CTX_set_padding(self->dec_ctx, 0);
+            EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
             if (1 != EVP_DecryptUpdate(self->dec_ctx, plaintext, &out_len, ciphertext, size))
                 croak("EVP_%sUpdate failed", "Decrypt");
-            plaintext_len = out_len;
 
-            if(1 != EVP_DecryptFinal_ex(self->dec_ctx, plaintext + out_len, &out_len))
+            plaintext_len += out_len;
+
+            if(1 != EVP_DecryptFinal(self->dec_ctx, plaintext + out_len, &out_len))
                 croak("EVP_%sFinal_ex failed", "Decrypt");
 
+            plaintext_len += out_len;
+
+            RETVAL = newSV (plaintext_len);
+            SvPOK_only (RETVAL);
+            SvCUR_set (RETVAL, plaintext_len);
             sv_setpvn(RETVAL, (const char * const) plaintext, plaintext_len);
             Safefree(plaintext);
 #else
+            RETVAL = newSV (size);
+            SvPOK_only (RETVAL);
+            SvCUR_set (RETVAL, size);
             AES_decrypt(ciphertext, (unsigned char *) SvPV_nolen(RETVAL), &self->dec_key);
 #endif
         }
