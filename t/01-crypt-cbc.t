@@ -1,4 +1,4 @@
-use Test::More;
+use Test::More tests => 1;
 use Crypt::CBC;
 
 my $plaintext = "This is a test!!";
