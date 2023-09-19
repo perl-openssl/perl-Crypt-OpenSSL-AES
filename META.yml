@@ -4,7 +4,17 @@ author:
   - 'Tolga Tarhan <cpan at ttar dot org>'
 build_requires:
   Crypt::CBC: '0'
+  Crypt::Cipher::AES: '0'
+  Crypt::Digest::SHA512_256: '0'
+  Crypt::Mode::CBC: '0'
+  Crypt::Mode::CFB: '0'
+  Crypt::Mode::CTR: '0'
+  Crypt::Mode::ECB: '0'
+  Crypt::Mode::OFB: '0'
   Crypt::OpenSSL::Guess: '0'
+  Crypt::PRNG: '0'
+  Digest::SHA: '0'
+  MIME::Base64: '0'
   Test::More: '0'
 configure_requires:
   Crypt::OpenSSL::Guess: '0'
