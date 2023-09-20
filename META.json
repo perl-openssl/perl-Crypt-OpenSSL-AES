@@ -61,7 +61,7 @@
    "provides" : {
       "Crypt::OpenSSL::AES" : {
          "file" : "lib/Crypt/OpenSSL/AES.pm",
-         "version" : "0.08"
+         "version" : "0.09"
       }
    },
    "release_status" : "stable",
@@ -76,7 +76,7 @@
          "web" : "https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES"
       }
    },
-   "version" : "0.08",
+   "version" : "0.09",
    "x_generated_by_perl" : "v5.36.1",
    "x_maintainers" : [
       "Timothy Legge <timlegge@cpan.org>"
