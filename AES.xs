@@ -1,3 +1,4 @@
+#define PERL_NO_GET_CONTEXT
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
@@ -30,7 +31,7 @@ typedef struct state {
 #endif
 } *Crypt__OpenSSL__AES;
 
-int get_option_ivalue (HV * options, char * name) {
+int get_option_ivalue (pTHX_ HV * options, char * name) {
     SV **svp;
     IV value;
 
@@ -44,7 +45,7 @@ int get_option_ivalue (HV * options, char * name) {
     return 0;
 }
 
-char * get_option_svalue (HV * options, char * name) {
+char * get_option_svalue (pTHX_ HV * options, char * name) {
     SV **svp;
     SV * value;
 
@@ -57,8 +58,8 @@ char * get_option_svalue (HV * options, char * name) {
     return NULL;
 }
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-EVP_CIPHER * get_cipher(HV * options) {
-    char * name = get_option_svalue(options, "cipher");
+EVP_CIPHER * get_cipher(pTHX_ HV * options) {
+    char * name = get_option_svalue(aTHX_ options, "cipher");
     if (name == NULL)
         name = "AES-256-ECB";
 
@@ -66,24 +67,24 @@ EVP_CIPHER * get_cipher(HV * options) {
 }
 #endif
 
-char * get_cipher_name (HV * options) {
-    char * value = get_option_svalue(options, "cipher");
+char * get_cipher_name (pTHX_ HV * options) {
+    char * value = get_option_svalue(aTHX_ options, "cipher");
     if (value == NULL)
         return "AES-256-ECB";
 
     return value;
 }
 
-unsigned char * get_iv(HV * options) {
-    return (unsigned char * ) get_option_svalue(options, "iv");
+unsigned char * get_iv(pTHX_ HV * options) {
+    return (unsigned char * ) get_option_svalue(aTHX_ options, "iv");
 }
 
-int get_padding(HV * options) {
-    return get_option_ivalue(options, "padding");
+int get_padding(pTHX_ HV * options) {
+    return get_option_ivalue(aTHX_ options, "padding");
 }
 
 // Taken from p5-Git-Raw
-STATIC HV *ensure_hv(SV *sv, const char *identifier) {
+STATIC HV *ensure_hv(pTHX_ SV *sv, const char *identifier) {
     if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)
     croak("Invalid type for '%s', expected a hash", identifier);
 
@@ -118,7 +119,7 @@ CODE:
         char * cipher_name = NULL;
 #endif
         if (items > 2)
-            options = ensure_hv(ST(2), "options");
+            options = ensure_hv(aTHX_ ST(2), "options");
 
         if (!SvPOK (key_sv))
             croak("Key must be a scalar");
@@ -130,11 +131,11 @@ CODE:
             croak ("The key must be 128, 192 or 256 bits long");
 
         Newz(0, RETVAL, 1, struct state);
-        RETVAL->padding = get_padding(options);
+        RETVAL->padding = get_padding(aTHX_ options);
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-        cipher = get_cipher(options);
-        iv = get_iv(options);
-        cipher_name = get_cipher_name(options);
+        cipher = get_cipher(aTHX_ options);
+        iv = get_iv(aTHX_ options);
+        cipher_name = get_cipher_name(aTHX_ options);
         if ((strcmp(cipher_name, "AES-128-ECB") == 0 ||
             strcmp(cipher_name, "AES-192-ECB") == 0 ||
             strcmp(cipher_name, "AES-256-ECB") == 0)
