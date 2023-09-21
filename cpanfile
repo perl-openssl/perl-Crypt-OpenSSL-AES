@@ -11,6 +11,17 @@ on 'build' => sub {
 
 on 'test' => sub {
   requires "Crypt::CBC" => "0";
+  requires "Crypt::Cipher::AES" => "0";
+  requires "Crypt::Digest::SHA512_256" => "0";
+  requires "Crypt::Mode::CBC" => "0";
+  requires "Crypt::Mode::CFB" => "0";
+  requires "Crypt::Mode::CTR" => "0";
+  requires "Crypt::Mode::ECB" => "0";
+  requires "Crypt::Mode::OFB" => "0";
+  requires "Crypt::OpenSSL::Guess" => "0";
+  requires "Crypt::PRNG" => "0";
+  requires "Digest::SHA" => "0";
+  requires "MIME::Base64" => "0";
   requires "Test::More" => "0";
 };
 

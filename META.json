@@ -43,6 +43,17 @@
       "test" : {
          "requires" : {
             "Crypt::CBC" : "0",
+            "Crypt::Cipher::AES" : "0",
+            "Crypt::Digest::SHA512_256" : "0",
+            "Crypt::Mode::CBC" : "0",
+            "Crypt::Mode::CFB" : "0",
+            "Crypt::Mode::CTR" : "0",
+            "Crypt::Mode::ECB" : "0",
+            "Crypt::Mode::OFB" : "0",
+            "Crypt::OpenSSL::Guess" : "0",
+            "Crypt::PRNG" : "0",
+            "Digest::SHA" : "0",
+            "MIME::Base64" : "0",
             "Test::More" : "0"
          }
       }
@@ -50,7 +61,7 @@
    "provides" : {
       "Crypt::OpenSSL::AES" : {
          "file" : "lib/Crypt/OpenSSL/AES.pm",
-         "version" : "0.08"
+         "version" : "0.09"
       }
    },
    "release_status" : "stable",
@@ -65,7 +76,7 @@
          "web" : "https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES"
       }
    },
-   "version" : "0.08",
+   "version" : "0.09",
    "x_generated_by_perl" : "v5.36.1",
    "x_maintainers" : [
       "Timothy Legge <timlegge@cpan.org>"
