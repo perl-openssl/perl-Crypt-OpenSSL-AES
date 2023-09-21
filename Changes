@@ -2,6 +2,23 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.09 -- Wed Sep 20 23:04:24 ADT 2023
+
+    [Significant updates since 0.08]
+
+    - Added support for CBC, CFB, CTR and OFB
+    - Allows encryption of data larger than 16-bytes
+    - Uses padding for data that is not a multiple of 16-bytes
+    - Allows support for IV for supported ciphers
+
+    - f84bd04 Update MANIFEST file
+    - c23620a Increment version for next release
+    - fcf7e23 Update dependencies
+    - 4de67f5 Add tests for multiple ciphers
+    - 750f2bb Support additional AES ciphers
+    - a6fd450 Change tabs to spaces - tabs were driving me crazy
+    - d6e7f7d (tag: 0.08) v0.08
+
 0.08 -- Sat Sep 16 00:19:13 ADT 2023
 
     [Detailed Changes]
