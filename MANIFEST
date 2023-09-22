@@ -8,7 +8,6 @@ LICENSE
 maint/Makefile_header.PL
 Makefile.PL
 MANIFEST
-META.json
 META.yml
 README.md
 ppport.h
