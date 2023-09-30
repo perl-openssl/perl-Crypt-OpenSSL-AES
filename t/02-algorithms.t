@@ -4,7 +4,7 @@ use Crypt::PRNG qw(rand);
 use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
 use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths);
 my ($major, $minor, $patch) = openssl_version();
-print "Installed OpenSSL: $major $minor $patch\n";
+print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
