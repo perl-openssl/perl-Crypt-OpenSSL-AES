@@ -156,6 +156,7 @@ CODE:
         if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, cipher,
                                         NULL, key, iv))
             croak ("EVP_DecryptInit_ex failed");
+        EVP_CIPHER_free(cipher);
 #else
         AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
         AES_set_decrypt_key(key,keysize*8,&RETVAL->dec_key);
@@ -271,7 +272,7 @@ DESTROY(self)
     Crypt::OpenSSL::AES self
 CODE:
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    Safefree(self->enc_ctx);
-    Safefree(self->dec_ctx);
+    EVP_CIPHER_CTX_free(self->enc_ctx);
+    EVP_CIPHER_CTX_free(self->dec_ctx);
 #endif
     Safefree(self);
