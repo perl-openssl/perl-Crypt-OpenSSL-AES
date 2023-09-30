@@ -60,9 +60,9 @@ char * get_option_svalue (pTHX_ HV * options, char * name) {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 EVP_CIPHER * get_cipher(pTHX_ HV * options) {
     char * name = get_option_svalue(aTHX_ options, "cipher");
-    if (name == NULL)
-        name = "AES-256-ECB";
-
+    if (name == NULL) {
+        return EVP_CIPHER_fetch(NULL, "AES-256-ECB", NULL);
+    }
     return EVP_CIPHER_fetch(NULL, name, NULL);
 }
 #endif
