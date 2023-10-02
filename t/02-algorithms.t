@@ -2,13 +2,9 @@ use Test::More tests => 12;
 use Crypt::Mode::CBC;
 use Crypt::PRNG qw(rand);
 use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
-use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths find_openssl_exec find_openssl_prefix);
+use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths);
 my ($major, $minor, $patch) = openssl_version();
-my $prefix          = find_openssl_prefix();
-my $openssl         = find_openssl_exec($prefix);
-my $version_string  = `$openssl version`;
-$version_string =~ m/(^[A-z]+)/;
-print "Installed $1: $major.$minor", defined $patch ? $patch : "", "\n";
+print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
@@ -38,7 +34,6 @@ ok($c->decrypt($c->encrypt("Hello World. 123")) eq "Hello World. 123", "Simple S
 SKIP: {
 
     skip "OpenSSL 3.x is not installed", 1 if ($major lt 3.0);
-    skip "LibreSSL is installed", 1 if ($version_string =~ /LibreSSL/);
 
     $key = sha512_256_hex(rand(1000));
     $iv =  sha512_256_hex(rand(1000));
@@ -80,7 +75,6 @@ unlike ($@, qr/AES: Data size must be multiple of blocksize/, "Padding and data 
 
 SKIP: {
     skip "OpenSSL 3.x is not installed", 1 if ($major lt 3.0);
-    skip "LibreSSL is installed", 1 if ($version_string =~ /LibreSSL/);
 
     eval {
         $c = Crypt::OpenSSL::AES->new(pack("H*", $key),
