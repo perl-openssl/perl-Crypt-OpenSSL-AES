@@ -1,7 +1,5 @@
 use Test::More tests => 12;
-use Crypt::Mode::CBC;
-use Crypt::PRNG qw(rand);
-use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
+use MIME::Base64 qw/encode_base64 decode_base64/;
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
@@ -27,16 +25,15 @@ my $c = Crypt::OpenSSL::AES->new($key,
 ok($c->decrypt($c->encrypt("Hello World. 123")) eq "Hello World. 123", "Simple String Encrypted/Decrypted Successfully with AES-256-CBC and IV");
 
 {
-    $key = sha512_256_hex(rand(1000));
-    $iv =  sha512_256_hex(rand(1000));
-
-    my $cbc = Crypt::Mode::CBC->new('AES', 1);
-    my $ciphertext = $cbc->encrypt("Hello World. 123", pack("H*", $key), pack("H*", substr($iv, 0, 32)));
+    $key    = "e4e9ac6aa161179889f0e3804d187112f59f3325950a27d943be398074968afc";
+    $iv     = "4b2e6d920c60f1212c07c2e4d7ce6776c";
+    # Following data was encrypted with Crypt::Mode::CBC
+    $ciphertext = decode_base64("bnTwr7+SR5m71I2TKZNJzz5UcQuoTRdzKvXU/2aN+aA=");
 
     my $c = Crypt::OpenSSL::AES->new(pack("H*", $key),
                                     {
                                         cipher   => 'AES-256-CBC',
-                                        iv          => pack("H*", substr($iv, 0, 32)),
+                                        iv          => pack("H*", $iv),
                                         padding     => 1,
                                     });
     ok($c->decrypt($ciphertext) eq "Hello World. 123", "Decrypt Crypt::Mode::CBC encrypted data");

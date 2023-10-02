@@ -1,35 +1,44 @@
 use strict;
 use warnings;
 use Test::More tests => 7;
-use Crypt::Mode::CTR;
-use Crypt::Cipher::AES;
-use Crypt::PRNG qw(rand);
-use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
+use MIME::Base64 qw/encode_base64 decode_base64/;
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
+
+# key = substr(sha512_256_hex(rand(1000)), 0, ($ks/4));
+my %key = (
+          '192' => 'fa46de67ab6f1bb5a9af97452babdb294e49457171e3903e',
+          '256' => 'd4b0bc6a9b2d4fa30565e5b16795d278e4b7111c45f6932e98cd5f69cf6bc636',
+          '128' => '77c36b08f4d9093d0fe7c4c1c757b1d3',
+        );
+
+# iv  = substr(sha512_256_hex(rand(1000)), 0, 32);
+my %iv = (
+          '128' => '409c5c7c71c14bb5e29f175ec37749af',
+          '256' => 'a25195197720b34630258d6de83f2a56',
+          '192' => 'bd0e782c29a791720ac1bcca2f346f1c',
+        );
+
+# Following data was encrypted with Crypt::Mode::CTR
+my %encrypted = (
+          '256' => 'YoZDbH4wa1GphVpYKu6VfA==',
+          '192' => '2BVvGDc3WBKbemaf7ftDvQ==',
+          '128' => 'ezLSxC6bIjjFZNR4wRoEpg==',
+        );
 
 my @keysize = ("128", "192", "256");
 foreach my $ks (@keysize) {
     {
-        my $key = pack("H*", substr(sha512_256_hex(rand(1000)), 0, ($ks/4)));
-        my $iv  = pack("H*", substr(sha512_256_hex(rand(1000)), 0, 32));
-
-        my $coa = Crypt::OpenSSL::AES->new($key,
+        my $coa = Crypt::OpenSSL::AES->new(pack("H*", $key{$ks}),
                                         {
                                         cipher  => "AES-$ks-CTR",
-                                        iv      => $iv,
+                                        iv      => pack("H*", $iv{$ks}),
                                         });
 
-        my $ecb = Crypt::Mode::CTR->new('AES');
+        my $ciphertext = $coa->encrypt("Hello World. 123");
+        ok($ciphertext eq decode_base64($encrypted{$ks}), "Crypt::OpenSSL::AES ($ks) - Created expected ciphertext");
 
-        my $encrypted = $coa->encrypt("Hello World. 123");
-        my $plaintext = $ecb->decrypt($encrypted, $key, $iv);
-
-        ok($plaintext eq "Hello World. 123", "Crypt::OpenSSL::AES ($ks) - Decrypted with Crypt::Mode::CTR");
-
-        $encrypted = $ecb->encrypt("Hello World. 123", $key, $iv);
-        $plaintext = $coa->decrypt($encrypted);
-
+        my $plaintext = $coa->decrypt(decode_base64($encrypted{$ks}));
         ok($plaintext eq "Hello World. 123", "Crypt::Mode::CTR ($ks) - Decrypted with Crypt::OpenSSL::AES");
     }
 }

@@ -1,30 +1,32 @@
 use strict;
 use warnings;
-use Test::More tests => 4;
-use Crypt::Mode::CBC;
-use Crypt::Cipher::AES;
-use MIME::Base64 qw/encode_base64 decode_base64/;
+use Test::More tests => 3;
 use Digest::SHA qw(sha256 sha256_base64);
-use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
 {
 
-    my $key = sha512_256_hex(rand(1000));
-    my $iv =  sha512_256_hex(rand(1000));
+    my $key = 'fe004cb16d14814b71e2c0e7c52f0c1d20fecdbca37bce926c6fc46de7f58ad5';
+    my $iv = 'bb160a0e845bf36fe92310ba368c0d60';
+
+    # Checksum calculated on Crypt::Mode::CBC ciphertext
+    my $cbc_ciphertext_checksum = 'j2P40htNXAeq3qqORD4Ur/7q/a5iI0MqVatvXV3zwjs';
     my $data = do { local $/ = undef; <DATA> };
     my $checksum_orig = sha256_base64($data);
 
     my $coa = Crypt::OpenSSL::AES->new(pack("H*", $key),
                                     {
                                         cipher  => 'AES-256-CBC',
-                                        iv      => pack("H*", substr($iv, 0, 32)),
+                                        iv      => pack("H*", $iv),
                                         padding => 1,
                                     });
 
     # Encrypt with Crypt::OpenSSL::AES
     my $ciphertext = $coa->encrypt($data);
+
+    my $coa_ciphertext_checksum = sha256_base64($ciphertext);
+    ok($coa_ciphertext_checksum eq $cbc_ciphertext_checksum, "Crypt::OpenSSL::AES - Created expected ciphertext");
 
     # Decrypt with Crypt::OpenSSL::AES
     my $plaintext = $coa->decrypt($ciphertext);
@@ -32,23 +34,6 @@ BEGIN { use_ok('Crypt::OpenSSL::AES') };
     # Verify Crypt::OpenSSL::AES and Decrypt its Encryption
     ok($checksum_orig eq sha256_base64($plaintext), "Crypt::OpenSSL::AES Encrypted and Decrypted Successfully");
 
-    $coa = Crypt::OpenSSL::AES->new(pack("H*", $key),
-                                    {
-                                        cipher  => 'AES-256-CBC',
-                                        iv      => pack("H*", substr($iv, 0, 32)),
-                                        padding => 1,
-                                    });
-
-    my $cbc = Crypt::Mode::CBC->new('AES', 1);
-
-    # Verify Crypt::Mode::CBC can decrypt Crypt::OpenSSL::AES
-    my $plaintext_cbc = $cbc->decrypt($ciphertext, pack("H*", $key), pack("H*", substr($iv, 0, 32)));
-
-    ok($checksum_orig eq sha256_base64($plaintext_cbc), "Crypt::Mode::CBC decrypted Crypt::OpenSSL::AES Successfully");
-
-    my $ciphertext_cbc = $cbc->encrypt($data, pack("H*", $key), pack("H*", substr($iv, 0, 32)));
-    my $plaintext_coa = $coa->decrypt($ciphertext_cbc);
-    ok($checksum_orig eq sha256_base64($plaintext_coa), "Crypt::OpenSSL::AES decrypted Crypt::Mode::CBC Crypt::OpenSSL::AES Successfully");
 }
 
 done_testing;
