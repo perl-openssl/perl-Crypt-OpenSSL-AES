@@ -4,9 +4,6 @@ use Test::More tests => 13;
 use Crypt::Mode::CBC;
 use Crypt::PRNG qw(rand);
 use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
-use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths);
-my ($major, $minor, $patch) = openssl_version();
-print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
@@ -16,8 +13,7 @@ foreach my $ks (@keysize) {
     my $iv  = pack("H*", substr(sha512_256_hex(rand(1000)), 0, 32));
 
     foreach my $padding (0..1) {
-        SKIP: {
-            skip 'OpenSSL 3.0+ is not available', 2 if( $major lt "3.0" );
+        {
             my $msg = $padding ? "Padding" : "No Padding";
             my $coa = Crypt::OpenSSL::AES->new($key,
                                         {

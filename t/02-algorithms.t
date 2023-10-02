@@ -2,9 +2,6 @@ use Test::More tests => 12;
 use Crypt::Mode::CBC;
 use Crypt::PRNG qw(rand);
 use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
-use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths);
-my ($major, $minor, $patch) = openssl_version();
-print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
@@ -14,8 +11,6 @@ my $plaintext = pack("C*",0x41,0x42,0x43,0x44,0x41,0x42,0x43,0x44,0x41,0x42,0x43
 
 my $expected_enc = pack("C*", 0x9b, 0xc3, 0x7f, 0x1b, 0x92, 0x93, 0xcc, 0xf9, 0x6b, 0x64, 0x00, 0xae, 0xa3, 0xc8, 0x85, 0xbb);
 
-# cipher is ignored with OpenSSL version < 3.0
-# but AES_encrypt/AES_decrypt defaults to AES-256-ECB
 my $c = Crypt::OpenSSL::AES->new($key, {cipher => 'AES-256-ECB'});
 
 ok(($encrypted = $c->encrypt($plaintext)) eq $expected_enc, "Encrypted Successfully AES-256-ECB");
@@ -31,10 +26,7 @@ my $c = Crypt::OpenSSL::AES->new($key,
                                     });
 ok($c->decrypt($c->encrypt("Hello World. 123")) eq "Hello World. 123", "Simple String Encrypted/Decrypted Successfully with AES-256-CBC and IV");
 
-SKIP: {
-
-    skip "OpenSSL 3.x is not installed", 1 if ($major lt 3.0);
-
+{
     $key = sha512_256_hex(rand(1000));
     $iv =  sha512_256_hex(rand(1000));
 
@@ -73,9 +65,7 @@ eval {
 };
 unlike ($@, qr/AES: Data size must be multiple of blocksize/, "Padding and data over Block Size");
 
-SKIP: {
-    skip "OpenSSL 3.x is not installed", 1 if ($major lt 3.0);
-
+{
     eval {
         $c = Crypt::OpenSSL::AES->new(pack("H*", $key),
             { cipher => "AES-192-ECB", iv => pack("H*", substr($iv, 0, 32)), });

@@ -6,16 +6,11 @@ use Crypt::Cipher::AES;
 use MIME::Base64 qw/encode_base64 decode_base64/;
 use Digest::SHA qw(sha256 sha256_base64);
 use Crypt::Digest::SHA512_256 qw( sha512_256_hex );
-use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths);
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
-my ($major, $minor, $patch) = openssl_version();
-print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
+{
 
-SKIP: {
-
-    skip "OpenSSL 3.x is not installed", 3 if ($major lt 3.0);
     my $key = sha512_256_hex(rand(1000));
     my $iv =  sha512_256_hex(rand(1000));
     my $data = do { local $/ = undef; <DATA> };
