@@ -65,12 +65,7 @@ const EVP_CIPHER * get_cipher(pTHX_ HV * options) {
 EVP_CIPHER * get_cipher(pTHX_ HV * options) {
 #endif
     char * name = get_option_svalue(aTHX_ options, "cipher");
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
-    if (name == NULL) {
-        return EVP_CIPHER_fetch(NULL, "AES-256-ECB", NULL);
-    }
-    return EVP_CIPHER_fetch(NULL, name, NULL);
-#else
+
     if (name == NULL)
         return (EVP_CIPHER * ) EVP_aes_256_ecb();
     else if (strcmp(name, "AES-128-ECB") == 0)
@@ -105,7 +100,6 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options) {
         return (EVP_CIPHER * ) EVP_aes_256_ofb();
     else
         return (EVP_CIPHER * ) EVP_aes_256_ecb();
-#endif
 }
 
 char * get_cipher_name (pTHX_ HV * options) {
