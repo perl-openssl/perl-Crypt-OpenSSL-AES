@@ -2,6 +2,30 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.11 -- Mon Oct 02 22:03:40 ADT 2023
+
+    [Significant updates since 0.10]
+
+    - Bugfix from mokers and #149909
+    - Add full LibreSSL support for the new library API functions
+    - Remove dependency for CryptX (rewrite the tests)
+    - new library API functions supported for OpenSSL 0.9.8+
+
+    [Detailed Change Log]
+    - b328a6c Really remove Crypt::CBC dependency
+    - 16eb4b6 Fix #149909: v0.10 Segfaulting on macOS [rt.cpan.org #149909]
+    - c6bf4be Remove Build/Test dependency on CryptX
+    - cfe9571 The API supports 0.9.8 and above so the skips seem unnecessary
+    - 7fa47df Fix patch undefined
+    - 6fb6b23 Support libressl with modern api calls
+    - 8be70f0 reverse 2782f24 Don't run OpenSSL tests for LibreSSL
+    - 014f71e Increment version for release
+    - 2782f24 Don't run OpenSSL tests for LibreSSL
+    - 24072d3 Attempt to fix Free to wrong pool issue
+    - 49f93e3 Fix get_option_svalue issue
+    - d6cb161 Fix issue with tests - undefined
+    - f7027e3 (tag: 0.10) v0.10
+
 0.10 -- Thu Sep 21 23:10:38 ADT 2023
 
     [Significant updates since 0.08]
