@@ -15,7 +15,7 @@ use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths
 my %args;
 
 my ($major, $minor, $patch) = openssl_version();
-print "Installed OpenSSL: $major.$minor.$patch\n";
+print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
 
 $args{INC} =  openssl_inc_paths();
 $args{LIBS} = [openssl_lib_paths() . ' -lssl -lcrypto'];
@@ -73,20 +73,11 @@ my %WriteMakefileArgs = (
   },
   "TEST_REQUIRES" => {
     "Crypt::CBC" => 0,
-    "Crypt::Cipher::AES" => 0,
-    "Crypt::Digest::SHA512_256" => 0,
-    "Crypt::Mode::CBC" => 0,
-    "Crypt::Mode::CFB" => 0,
-    "Crypt::Mode::CTR" => 0,
-    "Crypt::Mode::ECB" => 0,
-    "Crypt::Mode::OFB" => 0,
-    "Crypt::OpenSSL::Guess" => 0,
-    "Crypt::PRNG" => 0,
     "Digest::SHA" => 0,
     "MIME::Base64" => 0,
     "Test::More" => 0
   },
-  "VERSION" => "0.10",
+  "VERSION" => "0.11",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -99,15 +90,7 @@ my %WriteMakefileArgs = (
 
 my %FallbackPrereqs = (
   "Crypt::CBC" => 0,
-  "Crypt::Cipher::AES" => 0,
-  "Crypt::Digest::SHA512_256" => 0,
-  "Crypt::Mode::CBC" => 0,
-  "Crypt::Mode::CFB" => 0,
-  "Crypt::Mode::CTR" => 0,
-  "Crypt::Mode::ECB" => 0,
-  "Crypt::Mode::OFB" => 0,
   "Crypt::OpenSSL::Guess" => 0,
-  "Crypt::PRNG" => 0,
   "Digest::SHA" => 0,
   "Exporter" => 0,
   "MIME::Base64" => 0,

@@ -2,9 +2,10 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "openssl/opensslv.h"
 
 #include <openssl/aes.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
 #include <openssl/evp.h>
 #endif
 
@@ -20,7 +21,7 @@
 */
 
 typedef struct state {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
     EVP_CIPHER_CTX *enc_ctx;
     EVP_CIPHER_CTX *dec_ctx;
     int padding;
@@ -57,15 +58,49 @@ char * get_option_svalue (pTHX_ HV * options, char * name) {
 
     return NULL;
 }
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+
+#ifdef LIBRESSL_VERSION_NUMBER
+const EVP_CIPHER * get_cipher(pTHX_ HV * options) {
+#else
 EVP_CIPHER * get_cipher(pTHX_ HV * options) {
-    char * name = get_option_svalue(aTHX_ options, "cipher");
-    if (name == NULL) {
-        return EVP_CIPHER_fetch(NULL, "AES-256-ECB", NULL);
-    }
-    return EVP_CIPHER_fetch(NULL, name, NULL);
-}
 #endif
+    char * name = get_option_svalue(aTHX_ options, "cipher");
+
+    if (name == NULL)
+        return (EVP_CIPHER * ) EVP_aes_256_ecb();
+    else if (strcmp(name, "AES-128-ECB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_128_ecb();
+    else if (strcmp(name, "AES-192-ECB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_192_ecb();
+    else if (strcmp(name, "AES-256-ECB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_256_ecb();
+    else if (strcmp(name, "AES-128-CBC") == 0)
+        return (EVP_CIPHER * ) EVP_aes_128_cbc();
+    else if (strcmp(name, "AES-192-CBC") == 0)
+        return (EVP_CIPHER * ) EVP_aes_192_cbc();
+    else if (strcmp(name, "AES-256-CBC") == 0)
+        return (EVP_CIPHER * ) EVP_aes_256_cbc();
+    else if (strcmp(name, "AES-128-CFB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_128_cfb();
+    else if (strcmp(name, "AES-192-CFB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_192_cfb();
+    else if (strcmp(name, "AES-256-CFB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_256_cfb();
+    else if (strcmp(name, "AES-128-CTR") == 0)
+        return (EVP_CIPHER * ) EVP_aes_128_ctr();
+    else if (strcmp(name, "AES-192-CTR") == 0)
+        return (EVP_CIPHER * ) EVP_aes_192_ctr();
+    else if (strcmp(name, "AES-256-CTR") == 0)
+        return (EVP_CIPHER * ) EVP_aes_256_ctr();
+    else if (strcmp(name, "AES-128-OFB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_128_ofb();
+    else if (strcmp(name, "AES-192-OFB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_192_ofb();
+    else if (strcmp(name, "AES-256-OFB") == 0)
+        return (EVP_CIPHER * ) EVP_aes_256_ofb();
+    else
+        return (EVP_CIPHER * ) EVP_aes_256_ecb();
+}
 
 char * get_cipher_name (pTHX_ HV * options) {
     char * value = get_option_svalue(aTHX_ options, "cipher");
@@ -113,8 +148,12 @@ CODE:
         unsigned char * key;
         SV * self;
         HV * options = newHV();
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
+#ifdef LIBRESSL_VERSION_NUMBER
+        const EVP_CIPHER * cipher;
+#else
         EVP_CIPHER * cipher;
+#endif
         unsigned char * iv = NULL;
         char * cipher_name = NULL;
 #endif
@@ -132,7 +171,7 @@ CODE:
 
         Newz(0, RETVAL, 1, struct state);
         RETVAL->padding = get_padding(aTHX_ options);
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
         cipher = get_cipher(aTHX_ options);
         iv = get_iv(aTHX_ options);
         cipher_name = get_cipher_name(aTHX_ options);
@@ -156,7 +195,9 @@ CODE:
         if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, cipher,
                                         NULL, key, iv))
             croak ("EVP_DecryptInit_ex failed");
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
         EVP_CIPHER_free(cipher);
+#endif
 #else
         AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
         AES_set_decrypt_key(key,keysize*8,&RETVAL->dec_key);
@@ -173,7 +214,7 @@ CODE:
     {
         STRLEN size;
         unsigned char * plaintext = (unsigned char *) SvPVbyte(data,size);
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
         int out_len = 0;
         int ciphertext_len = 0;
         unsigned char * ciphertext;
@@ -184,7 +225,7 @@ CODE:
         {
             if ((size % AES_BLOCK_SIZE != 0) && self->padding != 1)
                 croak ("AES: Data size must be multiple of blocksize (%d bytes)", AES_BLOCK_SIZE);
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
             EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
             if(1 != EVP_EncryptUpdate(self->enc_ctx, ciphertext , &out_len, plaintext, size))
@@ -225,7 +266,7 @@ CODE:
     {
         STRLEN size;
         unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
         int out_len = 0;
         int plaintext_len = 0;
         unsigned char * plaintext;
@@ -235,14 +276,14 @@ CODE:
         {
             if ((size % AES_BLOCK_SIZE != 0) && self->padding != 1)
                 croak ("AES: Data size must be multiple of blocksize (%d bytes)", AES_BLOCK_SIZE);
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
             EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
             if (1 != EVP_DecryptUpdate(self->dec_ctx, plaintext, &out_len, ciphertext, size))
                 croak("EVP_%sUpdate failed", "Decrypt");
 
             plaintext_len += out_len;
 
-            if(1 != EVP_DecryptFinal(self->dec_ctx, plaintext + out_len, &out_len))
+            if(1 != EVP_DecryptFinal_ex(self->dec_ctx, plaintext + out_len, &out_len))
                 croak("EVP_%sFinal_ex failed", "Decrypt");
 
             plaintext_len += out_len;
@@ -271,7 +312,7 @@ void
 DESTROY(self)
     Crypt::OpenSSL::AES self
 CODE:
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
     EVP_CIPHER_CTX_free(self->enc_ctx);
     EVP_CIPHER_CTX_free(self->dec_ctx);
 #endif

@@ -5,7 +5,7 @@ use Crypt::OpenSSL::Guess qw(openssl_version openssl_inc_paths openssl_lib_paths
 my %args;
 
 my ($major, $minor, $patch) = openssl_version();
-print "Installed OpenSSL: $major.$minor.$patch\n";
+print "Installed OpenSSL: $major.$minor", defined $patch ? $patch : "", "\n";
 
 $args{INC} =  openssl_inc_paths();
 $args{LIBS} = [openssl_lib_paths() . ' -lssl -lcrypto'];
