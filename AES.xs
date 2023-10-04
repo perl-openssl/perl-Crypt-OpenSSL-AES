@@ -59,6 +59,7 @@ char * get_option_svalue (pTHX_ HV * options, char * name) {
     return NULL;
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
 #ifdef LIBRESSL_VERSION_NUMBER
 const EVP_CIPHER * get_cipher(pTHX_ HV * options) {
 #else
@@ -101,6 +102,7 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options) {
     else
         return (EVP_CIPHER * ) EVP_aes_256_ecb();
 }
+#endif
 
 char * get_cipher_name (pTHX_ HV * options) {
     char * value = get_option_svalue(aTHX_ options, "cipher");
@@ -218,13 +220,16 @@ CODE:
         int out_len = 0;
         int ciphertext_len = 0;
         unsigned char * ciphertext;
-        Newc(1, ciphertext, size + AES_BLOCK_SIZE, unsigned char, unsigned char);
+        int block_size = EVP_CIPHER_CTX_block_size(self->enc_ctx);
+        Newc(1, ciphertext, size + block_size, unsigned char, unsigned char);
+#else
+        int block_size = AES_BLOCK_SIZE;
 #endif
 
         if (size)
         {
-            if ((size % AES_BLOCK_SIZE != 0) && self->padding != 1)
-                croak ("AES: Data size must be multiple of blocksize (%d bytes)", AES_BLOCK_SIZE);
+            if ((size % block_size != 0) && self->padding != 1)
+                croak ("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
             EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
@@ -270,12 +275,15 @@ CODE:
         int out_len = 0;
         int plaintext_len = 0;
         unsigned char * plaintext;
+        int block_size = EVP_CIPHER_CTX_block_size(self->dec_ctx);
         Newc(1, plaintext, size, unsigned char, unsigned char);
+#else
+        int block_size = AES_BLOCK_SIZE;
 #endif
         if (size)
         {
-            if ((size % AES_BLOCK_SIZE != 0) && self->padding != 1)
-                croak ("AES: Data size must be multiple of blocksize (%d bytes)", AES_BLOCK_SIZE);
+            if ((size % block_size != 0) && self->padding != 1)
+                croak ("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
             EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
             if (1 != EVP_DecryptUpdate(self->dec_ctx, plaintext, &out_len, ciphertext, size))
