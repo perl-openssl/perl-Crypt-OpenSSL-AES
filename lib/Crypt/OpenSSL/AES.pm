@@ -86,6 +86,13 @@ As of version 0.09 additional AES ciphers are supported.  Those are:
 
 =over 4
 
+=item Block Ciphers
+
+The blocksize is 16 bytes and must be padded if not a multiple of the
+blocksize.
+
+=over 4
+
 =item AES-128-ECB, AES-192-ECB and AES-256-ECB (no IV)
 
 Supports padding
@@ -94,17 +101,28 @@ Supports padding
 
 Supports padding and iv
 
+=back
+
+=over 4
+
+=item Stream Ciphers
+
+The blocksize is 1 byte. OpenSSL does not pad even if padding
+is set (the default).
+
 =item AES-128-CFB, AES-192-CFB and AES-256-CFB
 
-Supports padding and iv
+Supports iv
 
 =item AES-128-CTR, AES-192-CTR and AES-256-CTR
 
-Supports padding and iv
+Supports iv
 
 =item AES-128-OFB, AES-192-OFB and AES-256-OFB
 
-Supports padding and iv
+Supports iv
+
+=back
 
 =back
 
@@ -141,19 +159,27 @@ new constructor.
 
 =item $cipher->encrypt($data)
 
-Encrypt data. The size of C<$data> must be exactly C<blocksize> in
-length (16 bytes), otherwise this function will croak.
+Encrypt data. For Block Ciphers (ECB and CBC) the size of C<$data>
+must be exactly C<blocksize> in length (16 bytes) B<or> padding must be
+enabled in the B<new> constructor, otherwise this function will croak.
 
-You should use Crypt::CBC or something similar to encrypt/decrypt data
-of arbitrary lengths.
+For Stream ciphers (CFB, CTR or OFB) the block size is considered to
+be 1 byte and no padding is required.
+
+Crypt::CBC is no longer required to encrypt/decrypt data of arbitrary
+lengths.
 
 =item $cipher->decrypt($data)
 
-Decrypts C<$data>. The size of C<$data> must be exactly C<blocksize> in
-length (16 bytes), otherwise this function will croak.
+Decrypts data. For Block Ciphers (ECB and CBC) the size of C<$data>
+must be exactly C<blocksize> in length (16 bytes) B<or> padding must be
+enabled in the B<new> constructor, otherwise this function will croak.
 
-You should use Crypt::CBC or something similar to encrypt/decrypt data
-of arbitrary lengths.
+For Stream ciphers (CFB, CTR or OFB) the block size is considered to
+be 1 byte and no padding is required.
+
+Crypt::CBC is no longer required to encrypt/decrypt data of arbitrary
+lengths.
 
 =item keysize
 
@@ -169,6 +195,9 @@ The blocksize for AES is always 16 bytes.
 =back
 
 =head2 USE WITH CRYPT::CBC
+
+As padding is now supported for the CBC cipher, Crypt::CBC is no
+longer required but supported for backward compatibility.
 
 	use Crypt::CBC;
 

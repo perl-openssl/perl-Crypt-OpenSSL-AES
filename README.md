@@ -43,25 +43,35 @@ is simply a wrapper around the OpenSSL library.
 
 As of version 0.09 additional AES ciphers are supported.  Those are:
 
-- AES-128-ECB, AES-192-ECB and AES-256-ECB (no IV)
+- Block Ciphers
 
-    Supports padding
+    The blocksize is 16 bytes and must be padded if not a multiple of the
+    blocksize.
 
-- AES-128-CBC, AES-192-CBC and AES-256-CBC
+    - AES-128-ECB, AES-192-ECB and AES-256-ECB (no IV)
 
-    Supports padding and iv
+        Supports padding
 
-- AES-128-CFB, AES-192-CFB and AES-256-CFB
+    - AES-128-CBC, AES-192-CBC and AES-256-CBC
 
-    Supports padding and iv
+        Supports padding and iv
 
-- AES-128-CTR, AES-192-CTR and AES-256-CTR
+    - Stream Ciphers
 
-    Supports padding and iv
+        The blocksize is 1 byte. OpenSSL does not pad even if padding
+        is set (the default).
 
-- AES-128-OFB, AES-192-OFB and AES-256-OFB
+    - AES-128-CFB, AES-192-CFB and AES-256-CFB
 
-    Supports padding and iv
+        Supports iv
+
+    - AES-128-CTR, AES-192-CTR and AES-256-CTR
+
+        Supports iv
+
+    - AES-128-OFB, AES-192-OFB and AES-256-OFB
+
+        Supports iv
 
 - new()
 
@@ -96,19 +106,27 @@ As of version 0.09 additional AES ciphers are supported.  Those are:
 
 - $cipher->encrypt($data)
 
-    Encrypt data. The size of `$data` must be exactly `blocksize` in
-    length (16 bytes), otherwise this function will croak.
+    Encrypt data. For Block Ciphers (ECB and CBC) the size of `$data`
+    must be exactly `blocksize` in length (16 bytes) **or** padding must be
+    enabled in the **new** constructor, otherwise this function will croak.
 
-    You should use Crypt::CBC or something similar to encrypt/decrypt data
-    of arbitrary lengths.
+    For Stream ciphers (CFB, CTR or OFB) the block size is considered to
+    be 1 byte and no padding is required.
+
+    Crypt::CBC is no longer required to encrypt/decrypt data of arbitrary
+    lengths.
 
 - $cipher->decrypt($data)
 
-    Decrypts `$data`. The size of `$data` must be exactly `blocksize` in
-    length (16 bytes), otherwise this function will croak.
+    Decrypts data. For Block Ciphers (ECB and CBC) the size of `$data`
+    must be exactly `blocksize` in length (16 bytes) **or** padding must be
+    enabled in the **new** constructor, otherwise this function will croak.
 
-    You should use Crypt::CBC or something similar to encrypt/decrypt data
-    of arbitrary lengths.
+    For Stream ciphers (CFB, CTR or OFB) the block size is considered to
+    be 1 byte and no padding is required.
+
+    Crypt::CBC is no longer required to encrypt/decrypt data of arbitrary
+    lengths.
 
 - keysize
 
@@ -122,6 +140,9 @@ As of version 0.09 additional AES ciphers are supported.  Those are:
     The blocksize for AES is always 16 bytes.
 
 ## USE WITH CRYPT::CBC
+
+As padding is now supported for the CBC cipher, Crypt::CBC is no
+longer required but supported for backward compatibility.
 
 ```perl
     use Crypt::CBC;
