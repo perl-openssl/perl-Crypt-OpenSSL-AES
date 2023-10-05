@@ -2,6 +2,21 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.12 -- Wed Oct 04 21:02:53 ADT 2023
+
+    [Significant updates since 0.10]
+
+    - Bugfix from smokers and #149909
+    - Add full LibreSSL support for the new library API functions
+    - Remove dependency for CryptX (rewrite the tests)
+    - new library API functions supported for OpenSSL 0.9.8+
+
+    [Detailed Change Log]
+    - aba2120 Update version for a new release
+    - ecbcc51 Update POD to reflect recent changes
+    - 289803e Get the blocksize from the EVP_CIPHER_CTX
+    - 6f687cd v0.11
+
 0.11 -- Mon Oct 02 22:03:40 ADT 2023
 
     [Significant updates since 0.10]
