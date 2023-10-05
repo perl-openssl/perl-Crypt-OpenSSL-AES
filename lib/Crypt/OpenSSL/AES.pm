@@ -103,12 +103,16 @@ Supports padding and iv
 
 =back
 
+=back
+
 =over 4
 
 =item Stream Ciphers
 
 The blocksize is 1 byte. OpenSSL does not pad even if padding
 is set (the default).
+
+=over 4
 
 =item AES-128-CFB, AES-192-CFB and AES-256-CFB
 

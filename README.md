@@ -56,10 +56,10 @@ As of version 0.09 additional AES ciphers are supported.  Those are:
 
         Supports padding and iv
 
-    - Stream Ciphers
+- Stream Ciphers
 
-        The blocksize is 1 byte. OpenSSL does not pad even if padding
-        is set (the default).
+    The blocksize is 1 byte. OpenSSL does not pad even if padding
+    is set (the default).
 
     - AES-128-CFB, AES-192-CFB and AES-256-CFB
 
