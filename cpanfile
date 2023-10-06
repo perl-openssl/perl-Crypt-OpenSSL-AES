@@ -6,7 +6,7 @@ requires "XSLoader" => "0";
 requires "perl" => "5.008";
 
 on 'build' => sub {
-  requires "Crypt::OpenSSL::Guess" => "0";
+  requires "Crypt::OpenSSL::Guess" => "0.10";
 };
 
 on 'test' => sub {
@@ -16,7 +16,7 @@ on 'test' => sub {
 };
 
 on 'configure' => sub {
-  requires "Crypt::OpenSSL::Guess" => "0";
+  requires "Crypt::OpenSSL::Guess" => "0.10";
   requires "ExtUtils::MakeMaker" => "0";
 };
 

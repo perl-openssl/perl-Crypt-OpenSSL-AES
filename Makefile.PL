@@ -49,6 +49,10 @@ if ($Config{gccversion} =~ /llvm/i) {
 
 if ($Config{myuname} =~ /sunos|solaris/i) {
   $args{OPTIMIZE} = $cc_option_flags;
+} elsif ($Config{myuname} =~ /strawberry-perl/i) {
+  if ($Config{PERL_VERSION} <= 24) {
+    $args{LIBS} = [openssl_lib_paths() . ' -leay32'];
+  }
 } else {
   $args{OPTIMIZE} = $cc_option_flags;
 }
@@ -57,10 +61,10 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "A Perl wrapper around OpenSSL's AES library",
   "AUTHOR" => "Tolga Tarhan <cpan at ttar dot org>",
   "BUILD_REQUIRES" => {
-    "Crypt::OpenSSL::Guess" => 0
+    "Crypt::OpenSSL::Guess" => "0.10"
   },
   "CONFIGURE_REQUIRES" => {
-    "Crypt::OpenSSL::Guess" => 0,
+    "Crypt::OpenSSL::Guess" => "0.10",
     "ExtUtils::MakeMaker" => 0
   },
   "DISTNAME" => "Crypt-OpenSSL-AES",
@@ -88,7 +92,7 @@ my %WriteMakefileArgs = (
 );
 
 my %FallbackPrereqs = (
-  "Crypt::OpenSSL::Guess" => 0,
+  "Crypt::OpenSSL::Guess" => "0.10",
   "Digest::SHA" => 0,
   "Exporter" => 0,
   "MIME::Base64" => 0,
