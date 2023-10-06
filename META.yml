@@ -3,12 +3,12 @@ abstract: "A Perl wrapper around OpenSSL's AES library"
 author:
   - 'Tolga Tarhan <cpan at ttar dot org>'
 build_requires:
-  Crypt::OpenSSL::Guess: '0'
+  Crypt::OpenSSL::Guess: '0.10'
   Digest::SHA: '0'
   MIME::Base64: '0'
   Test::More: '0'
 configure_requires:
-  Crypt::OpenSSL::Guess: '0'
+  Crypt::OpenSSL::Guess: '0.10'
   ExtUtils::MakeMaker: '0'
 dynamic_config: 0
 generated_by: 'Dist::Zilla version 6.030, CPAN::Meta::Converter version 2.150010'
