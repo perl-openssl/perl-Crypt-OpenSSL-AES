@@ -49,7 +49,7 @@ if ($Config{gccversion} =~ /llvm/i) {
 
 if ($Config{myuname} =~ /sunos|solaris/i) {
   $args{OPTIMIZE} = $cc_option_flags;
-} elsif ($Config{myuname} =~ /strawberry-perl/i) {
+} elsif ($Config{myuname} =~ /strawberry-{0,1}perl/i) {
   if ($Config{PERL_VERSION} <= 24) {
     $args{LIBS} = [openssl_lib_paths() . ' -leay32'];
   }
@@ -80,7 +80,7 @@ my %WriteMakefileArgs = (
     "MIME::Base64" => 0,
     "Test::More" => 0
   },
-  "VERSION" => "0.13",
+  "VERSION" => "0.14",
   "test" => {
     "TESTS" => "t/*.t"
   }
