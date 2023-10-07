@@ -2,6 +2,15 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.14 -- Sat Oct 07 09:10:31 ADT 2023
+
+    [Significant updates since 0.13]
+    - None - Fix build issue on old strawberry-perl
+
+    [Detailed Change Log]
+    - c1ef642 Fix yet another strawberryperl build issue
+    - c1933ae v0.13
+
 0.13 -- Fri Oct 06 19:23:46 ADT 2023
 
     [Significant updates since 0.10]
