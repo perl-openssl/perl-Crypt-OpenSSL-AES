@@ -1,4 +1,4 @@
-use Test::More tests => 12;
+use Test::More tests => 13;
 use MIME::Base64 qw/encode_base64 decode_base64/;
 
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
@@ -68,6 +68,14 @@ unlike ($@, qr/AES: Data size must be multiple of blocksize/, "Padding and data 
             { cipher => "AES-192-ECB", iv => pack("H*", substr($iv, 0, 32)), });
     };
     like ($@, qr/AES-192-ECB does not use IV/, "AES-192-ECB does not use IV");
+}
+
+{
+    eval {
+        $c = Crypt::OpenSSL::AES->new(pack("H*", $key),
+            { cipher => "AES-512-ECB", iv => pack("H*", substr($iv, 0, 32)), });
+    };
+    like ($@, qr/You specified an unsupported cipher/, "Unsupported Cipher specified!");
 }
 
 eval {
