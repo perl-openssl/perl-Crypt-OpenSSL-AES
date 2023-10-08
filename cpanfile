@@ -10,7 +10,9 @@ on 'build' => sub {
 };
 
 on 'test' => sub {
+  requires "Crypt::OpenSSL::Guess" => "0.10";
   requires "Digest::SHA" => "0";
+  requires "File::Which" => "0";
   requires "MIME::Base64" => "0";
   requires "Test::More" => "0";
 };
