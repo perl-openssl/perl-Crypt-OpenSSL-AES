@@ -87,12 +87,20 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options) {
         return (EVP_CIPHER * ) EVP_aes_192_cfb();
     else if (strcmp(name, "AES-256-CFB") == 0)
         return (EVP_CIPHER * ) EVP_aes_256_cfb();
+#if OPENSSL_VERSION_NUMBER >=  0x10001000L
     else if (strcmp(name, "AES-128-CTR") == 0)
         return (EVP_CIPHER * ) EVP_aes_128_ctr();
     else if (strcmp(name, "AES-192-CTR") == 0)
         return (EVP_CIPHER * ) EVP_aes_192_ctr();
     else if (strcmp(name, "AES-256-CTR") == 0)
         return (EVP_CIPHER * ) EVP_aes_256_ctr();
+#else
+    else if (
+        (strcmp(name, "AES-128-CTR") == 0) ||
+        (strcmp(name, "AES-192-CTR") == 0) ||
+        (strcmp(name, "AES-256-CTR") == 0))
+        croak ("CTR ciphers not supported on this version of OpenSSL");
+#endif
     else if (strcmp(name, "AES-128-OFB") == 0)
         return (EVP_CIPHER * ) EVP_aes_128_ofb();
     else if (strcmp(name, "AES-192-OFB") == 0)
@@ -100,7 +108,7 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options) {
     else if (strcmp(name, "AES-256-OFB") == 0)
         return (EVP_CIPHER * ) EVP_aes_256_ofb();
     else
-        return (EVP_CIPHER * ) EVP_aes_256_ecb();
+        croak ("You specified an unsupported cipher");
 }
 #endif
 

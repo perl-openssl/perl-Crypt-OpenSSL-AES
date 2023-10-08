@@ -5,6 +5,7 @@ author:
 build_requires:
   Crypt::OpenSSL::Guess: '0.10'
   Digest::SHA: '0'
+  File::Which: '0'
   MIME::Base64: '0'
   Test::More: '0'
 configure_requires:
@@ -20,7 +21,7 @@ name: Crypt-OpenSSL-AES
 provides:
   Crypt::OpenSSL::AES:
     file: lib/Crypt/OpenSSL/AES.pm
-    version: '0.14'
+    version: '0.15'
 requires:
   Exporter: '0'
   XSLoader: '0'
@@ -29,7 +30,7 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=Crypt-OpenSSL-AES
   homepage: http://search.cpan.org/dist/Crypt-OpenSSL-AES/
   repository: git://github.com/perl-openssl/perl-Crypt-OpenSSL-AES.git
-version: '0.14'
+version: '0.15'
 x_generated_by_perl: v5.36.1
 x_maintainers:
   - 'Timothy Legge <timlegge@cpan.org>'
