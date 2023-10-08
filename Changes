@@ -2,6 +2,17 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.15 -- Sun Oct 08 10:25:18 ADT 2023
+
+    [Significant updates since 0.13]
+    - None - Don't support CTR ciphers on lod perls
+
+    [Detailed Change Log]
+    - 4e0e77e Add File::Which and Crypt::OpenSSL::Guess for tests
+    - 01d6c90 Show full OpenSSL version information
+    - 8502136 AES CTR was not supported on 1.0.0 and below
+    - 512f06e v0.14
+
 0.14 -- Sat Oct 07 09:10:31 ADT 2023
 
     [Significant updates since 0.13]
