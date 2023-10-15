@@ -10,7 +10,8 @@ my ($major, $minor, $patch) = openssl_version();
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
 SKIP: {
-    skip "AES CTR is not supported before OpenSSL 1.0.1", 6 if($major le "1.0" && $minor le "1");
+    skip "AES CTR is not supported before OpenSSL 1.0.1", 6 if($major lt "1.0");
+    skip "AES CTR is not supported before OpenSSL 1.0.1", 6 if($major le "1.0" && $minor lt "1");
 
     # key = substr(sha512_256_hex(rand(1000)), 0, ($ks/4));
     my %key = (
