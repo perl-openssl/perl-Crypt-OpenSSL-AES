@@ -2,10 +2,26 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.16 -- Sun Oct 15 11:07:09 ADT 2023
+
+    [Significant updates since 0.15]
+
+    Fixes a couple of vexing build issues on some MacOS environments
+    where the module would be built against OpenSSLv3 but linked to
+    OpenSSLv1.  Fix is a Makefile.PL workaround for what is likely a
+    toolchain issue.
+
+    [Detailed Change Log]
+    - 166d710 Fix test issue lt versus le for OpenSSL versions
+    - b0da334 Increment version for release
+    - 8988e45 Output OpenSSL version during test
+    - 1bb51ed Fixes RT issues 141491 and 149909
+    - 82680e4 v0.15
+
 0.15 -- Sun Oct 08 10:25:18 ADT 2023
 
     [Significant updates since 0.13]
-    - None - Don't support CTR ciphers on lod perls
+    - None - Don't support CTR ciphers on old perls
 
     [Detailed Change Log]
     - 4e0e77e Add File::Which and Crypt::OpenSSL::Guess for tests
