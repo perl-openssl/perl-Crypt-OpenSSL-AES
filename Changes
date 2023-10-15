@@ -2,6 +2,21 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.17 -- Sun Oct 15 16:17:22 ADT 2023
+
+    [Detailed Change Log]
+    - 4573a62 Increment version for release
+    - 5388652 Fix CTR Tests for old OpenSSL
+    - 175a751 v0.16
+
+    [Fix Change Log for 0.16]
+    Forgot to rebase the git repo
+    - a2c0878 Fix test issue lt versus le for OpenSSL versions
+    - adfe1ee Increment version for release
+    - 654f7f6 Output OpenSSL version during test
+    - fbc824c Fixes RT issues 141491 and 149909
+    - 87e4922 v0.15
+
 0.16 -- Sun Oct 15 11:07:09 ADT 2023
 
     [Significant updates since 0.15]
