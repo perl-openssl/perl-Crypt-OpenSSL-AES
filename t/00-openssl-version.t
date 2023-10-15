@@ -8,4 +8,4 @@ like($openssl, qr/openssl/, "Found openssl");
 print "$openssl version: ";
 
 my $version = `$openssl version`;
-print $version, "\n";
+diag($version);
