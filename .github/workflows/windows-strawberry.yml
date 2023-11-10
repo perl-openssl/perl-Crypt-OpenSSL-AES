@@ -31,5 +31,5 @@ jobs:
     - name: Build Module
       run: |
         perl Makefile.PL
-        make
-        make test
+        gmake
+        gmake test
