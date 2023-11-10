@@ -2,6 +2,18 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+    [Significant updates since 0.15]
+    Thanks to @maaarghk for reporting a breaking change post 0.02
+    The module now ensures that the cipher chosen (if not specified)
+    is the correct size according to the keysize.  It also enforces
+    that the keysize and ciphers can not be mismatched if the
+    cipher is specified.
+
+    [Detailed Change Log]
+    - 5cdb783 Strawberry Perl uses dmake
+    - ae50f2b Fixed #9: keysize should determine the cipher used
+    - 94731c4 v0.17
+
 0.17 -- Sun Oct 15 16:17:22 ADT 2023
 
     [Detailed Change Log]
