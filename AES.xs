@@ -251,10 +251,10 @@ CODE:
         int error;
         STRLEN size;
         unsigned char * plaintext = (unsigned char *) SvPVbyte(data,size);
+        unsigned char * ciphertext;
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
         int out_len = 0;
         int ciphertext_len = 0;
-        unsigned char * ciphertext;
         int block_size = EVP_CIPHER_CTX_block_size(self->enc_ctx);
 #else
         int block_size = AES_BLOCK_SIZE;
@@ -305,10 +305,10 @@ CODE:
         int error;
         STRLEN size;
         unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
+        unsigned char * plaintext;
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
         int out_len = 0;
         int plaintext_len = 0;
-        unsigned char * plaintext;
         int block_size = EVP_CIPHER_CTX_block_size(self->dec_ctx);
 #else
         int block_size = AES_BLOCK_SIZE;
