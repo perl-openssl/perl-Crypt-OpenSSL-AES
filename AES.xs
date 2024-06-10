@@ -133,7 +133,7 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
 
 char * get_cipher_name (pTHX_ HV * options, long long keysize) {
     char * value = get_option_svalue(aTHX_ options, "cipher");
-    if (value == NULL)
+    if (value == NULL) {
         if (keysize == 16)
             return "AES-128-ECB";
         else if (keysize == 24)
@@ -142,6 +142,7 @@ char * get_cipher_name (pTHX_ HV * options, long long keysize) {
             return "AES-256-ECB";
         else
             croak ("get_cipher_name - Unsupported Key Size");
+    }
 
     return value;
 }
@@ -251,7 +252,7 @@ CODE:
         int error;
         STRLEN size;
         unsigned char * plaintext = (unsigned char *) SvPVbyte(data,size);
-        unsigned char * ciphertext;
+        const char * ciphertext;
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
         int out_len = 0;
         int ciphertext_len = 0;
@@ -265,15 +266,15 @@ CODE:
             if((size % block_size != 0) && self->padding != 1) {
                 croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
             }
-            Newxc(ciphertext, size + block_size, unsigned char, unsigned char);
+            Newxc(ciphertext, size + block_size, unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
             EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
-            THROW(EVP_EncryptUpdate(self->enc_ctx, ciphertext , &out_len, plaintext, size));
+            THROW(EVP_EncryptUpdate(self->enc_ctx, (unsigned char *) ciphertext , &out_len, plaintext, size));
 
             ciphertext_len += out_len;
 
-            THROW(EVP_EncryptFinal_ex(self->enc_ctx, ciphertext + ciphertext_len, &out_len));
+            THROW(EVP_EncryptFinal_ex(self->enc_ctx, (unsigned char *) ciphertext + ciphertext_len, &out_len));
 
             ciphertext_len += out_len;
 
@@ -285,7 +286,7 @@ CODE:
                     croak("Unable to Encrypt");
 #else
             AES_encrypt(plaintext, ciphertext, &self->enc_key);
-            RETVAL = newSVpvn(ciphertext, size);
+            RETVAL = newSVpvn((const unsigned char *) ciphertext, size);
 #endif
         }
         else
@@ -305,7 +306,7 @@ CODE:
         int error;
         STRLEN size;
         unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
-        unsigned char * plaintext;
+        const char * plaintext;
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
         int out_len = 0;
         int plaintext_len = 0;
@@ -319,21 +320,21 @@ CODE:
             if ((size % block_size != 0) && self->padding != 1) {
                 croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
             }
-            Newxc(plaintext, size, unsigned char, unsigned char);
+            Newxc(plaintext, size, const unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
             EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
-            THROW(EVP_DecryptUpdate(self->dec_ctx, plaintext, &out_len, ciphertext, size));
+            THROW(EVP_DecryptUpdate(self->dec_ctx, (unsigned char *) plaintext, &out_len, ciphertext, size));
 
             plaintext_len += out_len;
 
-            THROW(EVP_DecryptFinal_ex(self->dec_ctx, plaintext + out_len, &out_len));
+            THROW(EVP_DecryptFinal_ex(self->dec_ctx, (unsigned char *) plaintext + out_len, &out_len));
 
             plaintext_len += out_len;
 
             RETVAL = newSVpvn(plaintext, plaintext_len);
 #else
             AES_decrypt(ciphertext, plaintext, &self->dec_key);
-            RETVAL = newSVpvn(plaintext, size);
+            RETVAL = newSVpvn((const unsigned char) plaintext, size);
 #endif
             err:
                 if(plaintext != NULL) Safefree(plaintext);
