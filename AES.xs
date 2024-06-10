@@ -181,9 +181,9 @@ new(class, key_sv, ...)
     SV *  key_sv
 CODE:
     {
+        PERL_UNUSED_ARG(class);
         STRLEN keysize;
         unsigned char * key;
-        SV * self;
         HV * options = newHV();
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
 #ifdef LIBRESSL_VERSION_NUMBER
