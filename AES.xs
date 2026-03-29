@@ -334,7 +334,7 @@ CODE:
             RETVAL = newSVpvn(plaintext, plaintext_len);
 #else
             AES_decrypt(ciphertext, plaintext, &self->dec_key);
-            RETVAL = newSVpvn((const unsigned char) plaintext, size);
+            RETVAL = newSVpvn((const unsigned char *) plaintext, size);
 #endif
             err:
                 if(plaintext != NULL) Safefree(plaintext);
