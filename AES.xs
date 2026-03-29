@@ -389,7 +389,7 @@ CODE:
 
             plaintext_len += out_len;
 
-            THROW(EVP_DecryptFinal_ex(self->dec_ctx, (unsigned char *) plaintext + out_len, &out_len));
+            THROW(EVP_DecryptFinal_ex(self->dec_ctx, (unsigned char *) plaintext + plaintext_len, &out_len));
 
             plaintext_len += out_len;
 
