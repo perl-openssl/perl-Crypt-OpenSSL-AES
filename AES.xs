@@ -222,7 +222,7 @@ CODE:
         PERL_UNUSED_ARG(class);
         STRLEN keysize;
         unsigned char * key;
-        HV * options = newHV();
+        HV * options = NULL;
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
 #ifdef LIBRESSL_VERSION_NUMBER
         const EVP_CIPHER * cipher;
@@ -244,7 +244,7 @@ CODE:
         if (keysize != 16 && keysize != 24 && keysize != 32)
             croak ("The key must be 128, 192 or 256 bits long");
 
-        Newz(0, RETVAL, 1, struct state);
+        Newxz(RETVAL, 1, struct state);
         RETVAL->padding = get_padding(aTHX_ options);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
         cipher = get_cipher(aTHX_ options, keysize);
@@ -257,19 +257,32 @@ CODE:
                 croak ("%s does not use IV", cipher_name);
 
         /* Create and initialise the context */
-        if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new()))
+        if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new())) {
+            Safefree(RETVAL);
             croak ("EVP_CIPHER_CTX_new failed for enc_ctx");
+        }
 
-        if(!(RETVAL->dec_ctx = EVP_CIPHER_CTX_new()))
+        if(!(RETVAL->dec_ctx = EVP_CIPHER_CTX_new())) {
+            EVP_CIPHER_CTX_free(RETVAL->enc_ctx);
+            Safefree(RETVAL);
             croak ("EVP_CIPHER_CTX_new failed for dec_ctx");
+        }
 
         if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, cipher,
-                                        NULL, key, iv))
+                                        NULL, key, iv)) {
+            EVP_CIPHER_CTX_free(RETVAL->enc_ctx);
+            EVP_CIPHER_CTX_free(RETVAL->dec_ctx);
+            Safefree(RETVAL);
             croak ("EVP_EncryptInit_ex failed");
+        }
 
         if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, cipher,
-                                        NULL, key, iv))
+                                        NULL, key, iv)) {
+            EVP_CIPHER_CTX_free(RETVAL->enc_ctx);
+            EVP_CIPHER_CTX_free(RETVAL->dec_ctx);
+            Safefree(RETVAL);
             croak ("EVP_DecryptInit_ex failed");
+        }
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
         EVP_CIPHER_free(cipher);
 #endif
@@ -306,8 +319,10 @@ CODE:
             }
             Newxc(ciphertext, size + block_size, unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
-            if (1 != EVP_EncryptInit_ex(self->enc_ctx, NULL, NULL, NULL, NULL))
+            if (1 != EVP_EncryptInit_ex(self->enc_ctx, NULL, NULL, NULL, NULL)) {
+                Safefree(ciphertext);
                 croak("EVP_EncryptInit_ex re-init failed");
+            }
 
             EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
@@ -363,8 +378,10 @@ CODE:
             }
             Newxc(plaintext, size, const unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
-            if (1 != EVP_DecryptInit_ex(self->dec_ctx, NULL, NULL, NULL, NULL))
+            if (1 != EVP_DecryptInit_ex(self->dec_ctx, NULL, NULL, NULL, NULL)) {
+                Safefree(plaintext);
                 croak("EVP_DecryptInit_ex re-init failed");
+            }
 
             EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
 
