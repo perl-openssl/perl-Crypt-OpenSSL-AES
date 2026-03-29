@@ -247,8 +247,6 @@ CODE:
         Newxz(RETVAL, 1, struct state);
         RETVAL->padding = get_padding(aTHX_ options);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
-        cipher = get_cipher(aTHX_ options, keysize);
-        iv = get_iv(aTHX_ options);
         cipher_name = get_cipher_name(aTHX_ options, keysize);
         if ((strcmp(cipher_name, "AES-128-ECB") == 0 ||
             strcmp(cipher_name, "AES-192-ECB") == 0 ||
@@ -256,6 +254,8 @@ CODE:
             && hv_exists(options, "iv", strlen("iv")))
                 croak ("%s does not use IV", cipher_name);
 
+        cipher = get_cipher(aTHX_ options, keysize);
+        iv = get_iv(aTHX_ options);
         /* Create and initialise the context */
         if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new())) {
             Safefree(RETVAL);
