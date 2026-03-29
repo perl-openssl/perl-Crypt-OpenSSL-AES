@@ -96,6 +96,33 @@ my $cipher = Crypt::OpenSSL::AES->new($key, {
 warn "FIPS mode active\n" if Crypt::OpenSSL::AES::fips_mode();
 ```
 
+# mod\_perl / THREADED ENVIRONMENTS
+
+**Never store a Crypt::OpenSSL::AES object in a package variable under
+mod\_perl with the worker or event MPM.** Each request handler must
+construct its own object. The underlying `EVP_CIPHER_CTX` is not
+thread-safe.
+
+Under prefork MPM this restriction does not apply, but you should still
+avoid constructing cipher objects at `use` time (i.e., at server startup
+before the fork), because OpenSSL's PRNG state is not safely shared
+across `fork()`.
+
+Recommended pattern for mod\_perl handlers:
+
+```perl
+sub handler {
+    my $r = shift;
+    my $cipher = Crypt::OpenSSL::AES->new($key, { ... });
+    # use $cipher only within this request
+}
+
+# httpd.conf or startup.pl
+PerlChildInitHandler sub {
+    Crypt::OpenSSL::AES::post_fork_init();
+}
+```
+
 - new()
 
     For compatibility with old versions you can simply pass the key to the

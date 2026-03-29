@@ -9,6 +9,10 @@
 #include <openssl/evp.h>
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#include <openssl/rand.h>
+#endif
+
 #include "ppport.h"
 
 /*
@@ -24,6 +28,9 @@ typedef struct state {
     EVP_CIPHER_CTX *enc_ctx;
     EVP_CIPHER_CTX *dec_ctx;
     int padding;
+#ifdef USE_ITHREADS
+    tTHX tid;
+#endif
 #else
     AES_KEY enc_key;
     AES_KEY dec_key;
@@ -332,6 +339,10 @@ CODE:
         AES_set_encrypt_key(key,keysize*8,&RETVAL->enc_key);
         AES_set_decrypt_key(key,keysize*8,&RETVAL->dec_key);
 #endif
+#if defined(USE_ITHREADS) && (OPENSSL_VERSION_NUMBER >= 0x00908000L)
+    /* Store the creating thread's ID so DESTROY can warn on misuse */
+    RETVAL->tid = aTHX;
+#endif
     }
 OUTPUT:
     RETVAL
@@ -352,6 +363,12 @@ CODE:
         int block_size = EVP_CIPHER_CTX_block_size(self->enc_ctx);
 #else
         int block_size = AES_BLOCK_SIZE;
+#endif
+#if defined(USE_ITHREADS) && (OPENSSL_VERSION_NUMBER >= 0x00908000L)
+        if (self->tid != aTHX)
+            croak("Crypt::OpenSSL::AES: encrypt() called from a different "
+                  "thread than the object was created in -- "
+                  "EVP_CIPHER_CTX is not thread-safe");
 #endif
         if (size)
         {
@@ -401,6 +418,12 @@ decrypt(self, data)
     SV *data
 CODE:
     {
+#if defined(USE_ITHREADS) && (OPENSSL_VERSION_NUMBER >= 0x00908000L)
+        if (self->tid != aTHX)
+            croak("Crypt::OpenSSL::AES: decrypt() called from a different "
+                  "thread than the object was created in -- "
+                  "EVP_CIPHER_CTX is not thread-safe");
+#endif
         int error;
         STRLEN size;
         unsigned char * ciphertext = (unsigned char *) SvPVbyte(data,size);
@@ -468,9 +491,21 @@ OUTPUT:
     RETVAL
 
 void
+post_fork_init()
+CODE:
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    RAND_poll();          /* re-seed PRNG from OS entropy */
+#endif
+
+void
 DESTROY(self)
     Crypt::OpenSSL::AES self
 CODE:
+#if defined(USE_ITHREADS) && (OPENSSL_VERSION_NUMBER >= 0x00908000L)
+    if (self->tid != aTHX)
+        warn("Crypt::OpenSSL::AES: object destroyed in a different thread "
+             "than it was created in -- EVP_CIPHER_CTX is not thread-safe");
+#endif
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
     EVP_CIPHER_CTX_free(self->enc_ctx);
     EVP_CIPHER_CTX_free(self->dec_ctx);

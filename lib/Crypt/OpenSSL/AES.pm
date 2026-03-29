@@ -19,6 +19,8 @@ our @ISA = qw(Exporter);
 require XSLoader;
 XSLoader::load('Crypt::OpenSSL::AES', $VERSION);
 
+sub CLONE_SKIP { 1 }
+
 # Preloaded methods go here.
 
 1;
@@ -128,6 +130,31 @@ Use AES-CBC or AES-CTR with a random IV instead.
 
     # Check at runtime:
     warn "FIPS mode active\n" if Crypt::OpenSSL::AES::fips_mode();
+
+=head1 mod_perl / THREADED ENVIRONMENTS
+
+B<Never store a Crypt::OpenSSL::AES object in a package variable under
+mod_perl with the worker or event MPM.> Each request handler must
+construct its own object. The underlying C<EVP_CIPHER_CTX> is not
+thread-safe.
+
+Under prefork MPM this restriction does not apply, but you should still
+avoid constructing cipher objects at C<use> time (i.e., at server startup
+before the fork), because OpenSSL's PRNG state is not safely shared
+across C<fork()>.
+
+Recommended pattern for mod_perl handlers:
+
+    sub handler {
+        my $r = shift;
+        my $cipher = Crypt::OpenSSL::AES->new($key, { ... });
+        # use $cipher only within this request
+    }
+
+    # httpd.conf or startup.pl
+    PerlChildInitHandler sub {
+        Crypt::OpenSSL::AES::post_fork_init();
+    }
 
 =over 4
 
