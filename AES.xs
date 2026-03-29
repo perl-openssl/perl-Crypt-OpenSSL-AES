@@ -60,6 +60,38 @@ char * get_option_svalue (pTHX_ HV * options, char * name) {
     return NULL;
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+
+EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
+    char *name = get_option_svalue(aTHX_ options, "cipher");
+    char *props = get_option_svalue(aTHX_ options, "provider_props"); /* e.g. "fips=yes" */
+    char cipher_name[32];
+
+    if (name == NULL) {
+        if      (keysize == 16) snprintf(cipher_name, sizeof(cipher_name), "AES-128-ECB");
+        else if (keysize == 24) snprintf(cipher_name, sizeof(cipher_name), "AES-192-ECB");
+        else if (keysize == 32) snprintf(cipher_name, sizeof(cipher_name), "AES-256-ECB");
+        else croak("Unsupported keysize");
+        name = cipher_name;
+    }
+
+    /* Validate keysize matches the cipher name prefix */
+    int cipher_bits = 0;
+    if (sscanf(name, "AES-%d-", &cipher_bits) == 1) {
+        if ((int)keysize * 8 != cipher_bits)
+            croak("You specified an unsupported cipher for this keysize");
+    } else {
+        croak("You specified an unsupported cipher");
+    }
+
+    EVP_CIPHER *cipher = EVP_CIPHER_fetch(NULL, name, props);
+    if (!cipher)
+        croak("You specified an unsupported cipher: %s", name);
+
+    return cipher;  /* caller must EVP_CIPHER_free() */
+}
+
+#else
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
 #ifdef LIBRESSL_VERSION_NUMBER
 const EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
@@ -129,6 +161,7 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
     else
         croak ("You specified an unsupported keysize (16, 24 or 32 bytes only)");
 }
+#endif
 #endif
 
 char * get_cipher_name (pTHX_ HV * options, long long keysize) {
