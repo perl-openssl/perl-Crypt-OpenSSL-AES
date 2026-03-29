@@ -73,6 +73,26 @@ As of version 0.09 additional AES ciphers are supported.  Those are:
 
         Supports iv
 
+# FIPS COMPLIANCE
+
+When using OpenSSL 3.0+ built with FIPS support, pass `provider_props =` 'fips=yes'>
+to the constructor to ensure only FIPS-validated algorithm implementations are used.
+
+**AES-ECB is not approved for general data encryption under FIPS 140-3.**
+Use AES-CBC or AES-CTR with a random IV instead.
+
+```perl
+my $cipher = Crypt::OpenSSL::AES->new($key, {
+    cipher         => 'AES-256-CBC',
+    iv             => $iv,
+    padding        => 1,
+    provider_props => 'fips=yes',
+});
+
+# Check at runtime:
+warn "FIPS mode active\n" if Crypt::OpenSSL::AES::fips_mode();
+```
+
 - new()
 
     For compatibility with old versions you can simply pass the key to the
@@ -132,6 +152,11 @@ As of version 0.09 additional AES ciphers are supported.  Those are:
 
     Crypt::CBC is no longer required to encrypt/decrypt data of arbitrary
     lengths.
+
+- $cipher->fips\_mode()
+
+    Will return true (1) or false (0) depending whether the openssl 'fips=yes'
+    default property is set.
 
 - keysize
 

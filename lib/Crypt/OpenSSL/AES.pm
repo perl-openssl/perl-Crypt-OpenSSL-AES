@@ -40,7 +40,6 @@ XSLoader::load('Crypt::OpenSSL::AES', $VERSION);
 
 1;
 __END__
-
 =head1 NAME
 
 Crypt::OpenSSL::AES - A Perl wrapper around OpenSSL's AES library
@@ -103,10 +102,6 @@ Supports padding and iv
 
 =back
 
-=back
-
-=over 4
-
 =item Stream Ciphers
 
 The blocksize is 1 byte. OpenSSL does not pad even if padding
@@ -129,6 +124,24 @@ Supports iv
 =back
 
 =back
+
+=head1 FIPS COMPLIANCE
+
+When using OpenSSL 3.0+ built with FIPS support, pass C<provider_props => 'fips=yes'>
+to the constructor to ensure only FIPS-validated algorithm implementations are used.
+
+B<AES-ECB is not approved for general data encryption under FIPS 140-3.>
+Use AES-CBC or AES-CTR with a random IV instead.
+
+    my $cipher = Crypt::OpenSSL::AES->new($key, {
+        cipher         => 'AES-256-CBC',
+        iv             => $iv,
+        padding        => 1,
+        provider_props => 'fips=yes',
+    });
+
+    # Check at runtime:
+    warn "FIPS mode active\n" if Crypt::OpenSSL::AES::fips_mode();
 
 =over 4
 
@@ -189,6 +202,11 @@ be 1 byte and no padding is required.
 
 Crypt::CBC is no longer required to encrypt/decrypt data of arbitrary
 lengths.
+
+=item $cipher->fips_mode()
+
+Will return true (1) or false (0) depending whether the openssl 'fips=yes'
+default property is set.
 
 =item keysize
 

@@ -99,6 +99,11 @@ const EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
 EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
 #endif
     char * name = get_option_svalue(aTHX_ options, "cipher");
+    char * props = get_option_svalue(aTHX_ options, "provider_props"); /* e.g. "fips=yes" */
+
+    if (props != NULL) {
+        croak ("provider_props fips=yes only supported on OpenSSL 3.0+");
+    }
 
     if (keysize == 16) {
         if (name == NULL)
@@ -386,6 +391,19 @@ CODE:
             RETVAL = newSVpv ("", 0);
         }
     }
+OUTPUT:
+    RETVAL
+
+int
+fips_mode()
+CODE:
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    RETVAL = EVP_default_properties_is_fips_enabled(NULL);
+#elif OPENSSL_VERSION_NUMBER >= 0x00908000L
+    RETVAL = FIPS_mode();
+#else
+    RETVAL = 0;
+#endif
 OUTPUT:
     RETVAL
 
