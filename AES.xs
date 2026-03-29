@@ -267,10 +267,16 @@ CODE:
         int cipher_iv_len = EVP_CIPHER_iv_length(cipher);
         if (cipher_iv_len > 0) {
             if (!iv) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                EVP_CIPHER_free(cipher);
+#endif
                 Safefree(RETVAL);
                 croak("Cipher %s requires an IV of %d bytes, but none was provided", cipher_name, cipher_iv_len);
             }
             if (iv_len != (STRLEN)cipher_iv_len) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+                EVP_CIPHER_free(cipher);
+#endif
                 Safefree(RETVAL);
                 croak("Invalid IV length for %s: expected %d bytes, got %d",
                         cipher_name, cipher_iv_len, (int)iv_len);
@@ -279,11 +285,17 @@ CODE:
 
         /* Create and initialise the context */
         if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new())) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            EVP_CIPHER_free(cipher);
+#endif
             Safefree(RETVAL);
             croak ("EVP_CIPHER_CTX_new failed for enc_ctx");
         }
 
         if(!(RETVAL->dec_ctx = EVP_CIPHER_CTX_new())) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            EVP_CIPHER_free(cipher);
+#endif
             EVP_CIPHER_CTX_free(RETVAL->enc_ctx);
             Safefree(RETVAL);
             croak ("EVP_CIPHER_CTX_new failed for dec_ctx");
@@ -291,6 +303,9 @@ CODE:
 
         if(1 != EVP_EncryptInit_ex(RETVAL->enc_ctx, cipher,
                                         NULL, key, iv)) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            EVP_CIPHER_free(cipher);
+#endif
             EVP_CIPHER_CTX_free(RETVAL->enc_ctx);
             EVP_CIPHER_CTX_free(RETVAL->dec_ctx);
             Safefree(RETVAL);
@@ -299,6 +314,9 @@ CODE:
 
         if(1 != EVP_DecryptInit_ex(RETVAL->dec_ctx, cipher,
                                         NULL, key, iv)) {
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+            EVP_CIPHER_free(cipher);
+#endif
             EVP_CIPHER_CTX_free(RETVAL->enc_ctx);
             EVP_CIPHER_CTX_free(RETVAL->dec_ctx);
             Safefree(RETVAL);
