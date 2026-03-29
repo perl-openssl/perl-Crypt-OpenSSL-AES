@@ -185,8 +185,14 @@ char * get_cipher_name (pTHX_ HV * options, long long keysize) {
     return value;
 }
 
-unsigned char * get_iv(pTHX_ HV * options) {
-    return (unsigned char * ) get_option_svalue(aTHX_ options, "iv");
+unsigned char * get_iv(pTHX_ HV * options, STRLEN *len) {
+    SV **svp;
+    if (options && hv_exists(options, "iv", 2 /* strlen("iv") */)) {
+        svp = hv_fetch(options, "iv", 2 /* strlen("iv") */, 0);
+        return (unsigned char *) SvPV(*svp, *len);
+    }
+    *len = 0;
+    return NULL;
 }
 
 int get_padding(pTHX_ HV * options) {
@@ -230,6 +236,7 @@ CODE:
         EVP_CIPHER * cipher;
 #endif
         unsigned char * iv = NULL;
+        STRLEN iv_len = 0;
         char * cipher_name = NULL;
 #endif
         if (items > 2)
@@ -255,7 +262,21 @@ CODE:
                 croak ("%s does not use IV", cipher_name);
 
         cipher = get_cipher(aTHX_ options, keysize);
-        iv = get_iv(aTHX_ options);
+        iv = get_iv(aTHX_ options, &iv_len);
+
+        int cipher_iv_len = EVP_CIPHER_iv_length(cipher);
+        if (cipher_iv_len > 0) {
+            if (!iv) {
+                Safefree(RETVAL);
+                croak("Cipher %s requires an IV of %d bytes, but none was provided", cipher_name, cipher_iv_len);
+            }
+            if (iv_len != (STRLEN)cipher_iv_len) {
+                Safefree(RETVAL);
+                croak("Invalid IV length for %s: expected %d bytes, got %d",
+                        cipher_name, cipher_iv_len, (int)iv_len);
+            }
+        }
+
         /* Create and initialise the context */
         if(!(RETVAL->enc_ctx = EVP_CIPHER_CTX_new())) {
             Safefree(RETVAL);
