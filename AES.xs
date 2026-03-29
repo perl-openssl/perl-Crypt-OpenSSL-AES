@@ -169,6 +169,7 @@ PROTOTYPES: ENABLE
 
 BOOT:
 {
+    dTHX;
     HV *stash = gv_stashpv("Crypt::OpenSSL::AES", 0);
 
     newCONSTSUB (stash, "keysize",   newSViv (32));
