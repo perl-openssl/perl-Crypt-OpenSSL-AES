@@ -268,6 +268,9 @@ CODE:
             }
             Newxc(ciphertext, size + block_size, unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
+            if (1 != EVP_EncryptInit_ex(self->enc_ctx, NULL, NULL, NULL, NULL))
+                croak("EVP_EncryptInit_ex re-init failed");
+
             EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
             THROW(EVP_EncryptUpdate(self->enc_ctx, (unsigned char *) ciphertext , &out_len, plaintext, size));
@@ -322,7 +325,11 @@ CODE:
             }
             Newxc(plaintext, size, const unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
+            if (1 != EVP_DecryptInit_ex(self->dec_ctx, NULL, NULL, NULL, NULL))
+                croak("EVP_DecryptInit_ex re-init failed");
+
             EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
+
             THROW(EVP_DecryptUpdate(self->dec_ctx, (unsigned char *) plaintext, &out_len, ciphertext, size));
 
             plaintext_len += out_len;
