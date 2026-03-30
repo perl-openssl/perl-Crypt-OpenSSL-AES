@@ -6,25 +6,28 @@ Crypt::OpenSSL::AES - A Perl wrapper around OpenSSL's AES library
 
 ```perl
  use Crypt::OpenSSL::AES;
+ use Crypt::URandom qw( urandom );  # Always use a strong random source
 
+ # Basic usage (defaults to AES-ECB based on key length; ECB is not recommended)
+ my $key    = urandom(32);
  my $cipher = Crypt::OpenSSL::AES->new($key);
 
- or
+ # Recommended usage: AES-256-CBC with proper Initialization Vector and Padding
+ my $secure_key = urandom(32); # 32 bytes (256 bits) for AES-256
+ my $iv         = urandom(16); # 16 bytes (128 bits) block size for AES
 
- # Pick better keys and iv...
- my $key = pack("H*", substr(sha512_256_hex(rand(1000)), 0, ($ks/4)));
- my $iv  = pack("H*", substr(sha512_256_hex(rand(1000)), 0, 32));
- my $cipher = Crypt::OpenSSL::AES->new(
-                                        $key,
-                                        {
-                                            cipher => 'AES-256-CBC',
-                                            iv      => $iv, (16-bytes for supported ciphers)
-                                            padding => 1, (0 - no padding, 1 - padding)
-                                        }
-                                    );
+ my $secure_cipher = Crypt::OpenSSL::AES->new(
+     $secure_key,
+     {
+         cipher  => 'AES-256-CBC',
+         iv      => $iv,
+         padding => 1, # 1 for standard block padding, 0 for no padding
+     }
+ );
 
- $encrypted = $cipher->encrypt($plaintext);
- $decrypted = $cipher->decrypt($encrypted);
+ my $plaintext = "Confidential data to be encrypted.";
+ my $encrypted = $secure_cipher->encrypt($plaintext);
+ my $decrypted = $secure_cipher->decrypt($encrypted);
 ```
 
 # DESCRIPTION
@@ -111,7 +114,7 @@ warn "FIPS mode active\n" if Crypt::OpenSSL::AES::fips_mode();
     my $cipher = Crypt::OpenSSL::AES->new($key,
                     {
                         cipher  => 'AES-256-CBC',
-                        iv      => $iv, (16-bytes for supported ciphers)
+                        iv      => $iv, # (16-bytes for supported ciphers)
                         padding => 1, (0 - no padding, 1 - padding)
                     });
 
