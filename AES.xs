@@ -172,7 +172,7 @@ EVP_CIPHER * get_cipher(pTHX_ HV * options, STRLEN keysize) {
 #endif
 #endif
 
-char * get_cipher_name (pTHX_ HV * options, long long keysize) {
+char * get_cipher_name (pTHX_ HV * options, STRLEN keysize) {
     char * value = get_option_svalue(aTHX_ options, "cipher");
     if (value == NULL) {
         if (keysize == 16)
