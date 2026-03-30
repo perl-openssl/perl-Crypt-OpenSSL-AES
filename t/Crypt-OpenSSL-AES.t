@@ -1,3 +1,5 @@
+use strict;
+use warnings;
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl Crypt-OpenSSL-AES.t'
 
@@ -22,6 +24,7 @@ my $expected_enc = pack("C*", 0x9b, 0xc3, 0x7f, 0x1b, 0x92, 0x93, 0xcc, 0xf9, 0x
 
 my $c = new Crypt::OpenSSL::AES($key);
 
+my $encrypted;
 ok(($encrypted = $c->encrypt($plaintext)) eq $expected_enc, "Encrypted Successfully");
 
 ok($c->decrypt($encrypted) eq $plaintext, "Decrypted Successfully");

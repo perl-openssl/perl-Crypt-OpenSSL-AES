@@ -1,8 +1,11 @@
+use strict;
+use warnings;
 use Test::More tests => 10;
 BEGIN { use_ok('Crypt::OpenSSL::AES') };
 
 my $key;
 my $plaintext;
+my $encrypted;
 my $expected_enc;
 my $c;
 
