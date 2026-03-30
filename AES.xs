@@ -382,6 +382,7 @@ CODE:
 #else
             AES_encrypt(plaintext, ciphertext, &self->enc_key);
             RETVAL = newSVpvn((const unsigned char *) ciphertext, size);
+            Safefree(ciphertext);
 #endif
         }
         else
