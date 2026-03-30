@@ -377,16 +377,15 @@ CODE:
             ciphertext_len += out_len;
 
             RETVAL = newSVpvn(ciphertext, ciphertext_len);
-
+#else
+            AES_encrypt(plaintext, ciphertext, &self->enc_key);
+            RETVAL = newSVpvn((const unsigned char *) ciphertext, size);
+#endif
+            /* Cleanup both branches and error case */ 
             err:
                 if (ciphertext != NULL) Safefree(ciphertext);
                 if(error)
                     croak("Unable to Encrypt");
-#else
-            AES_encrypt(plaintext, ciphertext, &self->enc_key);
-            RETVAL = newSVpvn((const unsigned char *) ciphertext, size);
-            Safefree(ciphertext);
-#endif
         }
         else
         {
@@ -441,6 +440,7 @@ CODE:
             AES_decrypt(ciphertext, plaintext, &self->dec_key);
             RETVAL = newSVpvn((const unsigned char *) plaintext, size);
 #endif
+            /* Cleanup both branches and error case */ 
             err:
                 if(plaintext != NULL) Safefree(plaintext);
                 if(error)
