@@ -205,7 +205,7 @@ int get_padding(pTHX_ HV * options) {
 /* Taken from p5-Git-Raw */
 STATIC HV *ensure_hv(pTHX_ SV *sv, const char *identifier) {
     if (!SvROK(sv) || SvTYPE(SvRV(sv)) != SVt_PVHV)
-    croak("Invalid type for '%s', expected a hash", identifier);
+        croak("Invalid type for '%s', expected a hash", identifier);
 
     return (HV *) SvRV(sv);
 }
