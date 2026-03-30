@@ -37,6 +37,8 @@ int get_option_ivalue (pTHX_ HV * options, char * name) {
     SV **svp;
     IV value;
 
+    if (!options) return 0;
+
     if (hv_exists(options, name, strlen(name))) {
         svp = hv_fetch(options, name, strlen(name), 0);
         if (SvIOKp(*svp)) {
@@ -51,6 +53,7 @@ char * get_option_svalue (pTHX_ HV * options, char * name) {
     SV **svp;
     SV * value;
 
+    if (!options) return NULL;
     if (hv_exists(options, name, strlen(name))) {
         svp = hv_fetch(options, name, strlen(name), 0);
         value = *svp;
@@ -258,7 +261,7 @@ CODE:
         if ((strcmp(cipher_name, "AES-128-ECB") == 0 ||
             strcmp(cipher_name, "AES-192-ECB") == 0 ||
             strcmp(cipher_name, "AES-256-ECB") == 0)
-            && hv_exists(options, "iv", strlen("iv")))
+            && (options && hv_exists(options, "iv", strlen("iv"))))
                 croak ("%s does not use IV", cipher_name);
 
         cipher = get_cipher(aTHX_ options, keysize);
