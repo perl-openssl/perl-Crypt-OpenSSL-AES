@@ -40,22 +40,6 @@ typedef struct state {
 
 #define THROW(p_result) if (!(p_result)) { error = 1; goto err; }
 
-int get_option_ivalue (pTHX_ HV * options, char * name) {
-    SV **svp;
-    IV value;
-
-    if (!options) return 0;
-
-    if (hv_exists(options, name, strlen(name))) {
-        svp = hv_fetch(options, name, strlen(name), 0);
-        if (SvIOKp(*svp)) {
-            value = SvIV(*svp);
-            return PTR2IV(value);
-        }
-    }
-    return 0;
-}
-
 char * get_option_svalue (pTHX_ HV * options, char * name) {
     SV **svp;
     SV * value;
@@ -206,7 +190,18 @@ unsigned char * get_iv(pTHX_ HV * options, STRLEN *len) {
 }
 
 int get_padding(pTHX_ HV * options) {
-    return get_option_ivalue(aTHX_ options, "padding");
+    SV **svp;
+
+    if (!options) return 0;
+
+    if (hv_exists(options, "padding", 7 /* strlen("padding") */)) {
+        svp = hv_fetch(options, "padding", 7 /* strlen("padding") */, 0);
+        if (SvTRUE(*svp))
+            return 1;
+        else
+            return 0;
+    }
+    return 0;
 }
 
 /* Taken from p5-Git-Raw */
