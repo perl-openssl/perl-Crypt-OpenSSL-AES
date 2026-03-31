@@ -10,6 +10,7 @@ on 'build' => sub {
 };
 
 on 'test' => sub {
+  requires "Crypt::CBC" => "3.07";
   requires "Crypt::OpenSSL::Guess" => "0.10";
   requires "Crypt::URandom" => "0";
   requires "Digest::SHA" => "0";
