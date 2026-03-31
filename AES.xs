@@ -268,8 +268,10 @@ CODE:
         if ((strcmp(cipher_name, "AES-128-ECB") == 0 ||
             strcmp(cipher_name, "AES-192-ECB") == 0 ||
             strcmp(cipher_name, "AES-256-ECB") == 0)
-            && (options && hv_exists(options, "iv", strlen("iv"))))
+            && (options && hv_exists(options, "iv", strlen("iv")))) {
+                Safefree(RETVAL);
                 croak ("%s does not use IV", cipher_name);
+        }
 
         cipher = get_cipher(aTHX_ options, keysize);
         iv = get_iv(aTHX_ options, &iv_len);
