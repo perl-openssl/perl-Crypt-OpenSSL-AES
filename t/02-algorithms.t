@@ -34,7 +34,7 @@ ok($c->decrypt($c->encrypt("Hello World. 123")) eq "Hello World. 123", "Simple S
 {
     SKIP: {
         skip "Crypt::Mode::CBC not supported - OpenSSL $major$minor", 1 if $major le '0.9' && $minor le '7';
-        $key    = "e4e9ac6aa161179889f0e3804d187112f59f3325950a27d943be398074968afc";
+        my $key    = "e4e9ac6aa161179889f0e3804d187112f59f3325950a27d943be398074968afc";
         # Following data was encrypted with Crypt::Mode::CBC
         my $ciphertext = decode_base64("bnTwr7+SR5m71I2TKZNJzz5UcQuoTRdzKvXU/2aN+aA=");
 
