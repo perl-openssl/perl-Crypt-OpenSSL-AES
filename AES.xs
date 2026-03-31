@@ -434,7 +434,7 @@ CODE:
         if ((size % block_size != 0) && self->padding != 1) {
             croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
         }
-        Newxc(plaintext, size, const unsigned char, const char);
+        Newxc(plaintext, size + block_size, const unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
         if (1 != EVP_DecryptInit_ex(self->dec_ctx, NULL, NULL, NULL, NULL)) {
             Safefree(plaintext);
