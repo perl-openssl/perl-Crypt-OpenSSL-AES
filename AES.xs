@@ -372,44 +372,37 @@ CODE:
                   "thread than the object was created in -- "
                   "EVP_CIPHER_CTX is not thread-safe");
 #endif
-        if (size)
-        {
-            error = 0;
-            if((size % block_size != 0) && self->padding != 1) {
-                croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
-            }
-            Newxc(ciphertext, size + block_size, unsigned char, const char);
+        error = 0;
+        if((size % block_size != 0) && self->padding != 1) {
+            croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
+        }
+        Newxc(ciphertext, size + block_size, unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
-            if (1 != EVP_EncryptInit_ex(self->enc_ctx, NULL, NULL, NULL, NULL)) {
-                Safefree(ciphertext);
-                croak("EVP_EncryptInit_ex re-init failed");
-            }
+        if (1 != EVP_EncryptInit_ex(self->enc_ctx, NULL, NULL, NULL, NULL)) {
+            Safefree(ciphertext);
+            croak("EVP_EncryptInit_ex re-init failed");
+        }
 
-            EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
+        EVP_CIPHER_CTX_set_padding(self->enc_ctx, self->padding);
 
-            THROW(EVP_EncryptUpdate(self->enc_ctx, (unsigned char *) ciphertext , &out_len, plaintext, size));
+        THROW(EVP_EncryptUpdate(self->enc_ctx, (unsigned char *) ciphertext , &out_len, plaintext, size));
 
-            ciphertext_len += out_len;
+        ciphertext_len += out_len;
 
-            THROW(EVP_EncryptFinal_ex(self->enc_ctx, (unsigned char *) ciphertext + ciphertext_len, &out_len));
+        THROW(EVP_EncryptFinal_ex(self->enc_ctx, (unsigned char *) ciphertext + ciphertext_len, &out_len));
 
-            ciphertext_len += out_len;
+        ciphertext_len += out_len;
 
-            RETVAL = newSVpvn(ciphertext, ciphertext_len);
+        RETVAL = newSVpvn(ciphertext, ciphertext_len);
 #else
-            AES_encrypt(plaintext, ciphertext, &self->enc_key);
-            RETVAL = newSVpvn((const unsigned char *) ciphertext, size);
+        AES_encrypt(plaintext, ciphertext, &self->enc_key);
+        RETVAL = newSVpvn((const unsigned char *) ciphertext, size);
 #endif
-            /* Cleanup both branches and error case */ 
-            err:
-                if (ciphertext != NULL) Safefree(ciphertext);
-                if(error)
-                    croak("Unable to Encrypt");
-        }
-        else
-        {
-            RETVAL = newSVpv ("", 0);
-        }
+        /* Cleanup both branches and error case */ 
+        err:
+            if (ciphertext != NULL) Safefree(ciphertext);
+            if(error)
+                croak("Unable to Encrypt");
     }
 OUTPUT:
     RETVAL
@@ -437,44 +430,37 @@ CODE:
 #else
         int block_size = AES_BLOCK_SIZE;
 #endif
-        if (size)
-        {
-            error = 0;
-            if ((size % block_size != 0) && self->padding != 1) {
-                croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
-            }
-            Newxc(plaintext, size, const unsigned char, const char);
+        error = 0;
+        if ((size % block_size != 0) && self->padding != 1) {
+            croak("AES: Data size must be multiple of blocksize (%d bytes)", block_size);
+        }
+        Newxc(plaintext, size, const unsigned char, const char);
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
-            if (1 != EVP_DecryptInit_ex(self->dec_ctx, NULL, NULL, NULL, NULL)) {
-                Safefree(plaintext);
-                croak("EVP_DecryptInit_ex re-init failed");
-            }
+        if (1 != EVP_DecryptInit_ex(self->dec_ctx, NULL, NULL, NULL, NULL)) {
+            Safefree(plaintext);
+            croak("EVP_DecryptInit_ex re-init failed");
+        }
 
-            EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
+        EVP_CIPHER_CTX_set_padding(self->dec_ctx, self->padding);
 
-            THROW(EVP_DecryptUpdate(self->dec_ctx, (unsigned char *) plaintext, &out_len, ciphertext, size));
+        THROW(EVP_DecryptUpdate(self->dec_ctx, (unsigned char *) plaintext, &out_len, ciphertext, size));
 
-            plaintext_len += out_len;
+        plaintext_len += out_len;
 
-            THROW(EVP_DecryptFinal_ex(self->dec_ctx, (unsigned char *) plaintext + plaintext_len, &out_len));
+        THROW(EVP_DecryptFinal_ex(self->dec_ctx, (unsigned char *) plaintext + plaintext_len, &out_len));
 
-            plaintext_len += out_len;
+        plaintext_len += out_len;
 
-            RETVAL = newSVpvn(plaintext, plaintext_len);
+        RETVAL = newSVpvn(plaintext, plaintext_len);
 #else
-            AES_decrypt(ciphertext, plaintext, &self->dec_key);
-            RETVAL = newSVpvn((const unsigned char *) plaintext, size);
+        AES_decrypt(ciphertext, plaintext, &self->dec_key);
+        RETVAL = newSVpvn((const unsigned char *) plaintext, size);
 #endif
-            /* Cleanup both branches and error case */ 
-            err:
-                if(plaintext != NULL) Safefree(plaintext);
-                if(error)
-                    croak("Unable to Decrypt");
-        }
-        else
-        {
-            RETVAL = newSVpv ("", 0);
-        }
+        /* Cleanup both branches and error case */ 
+        err:
+            if(plaintext != NULL) Safefree(plaintext);
+            if(error)
+                croak("Unable to Decrypt");
     }
 OUTPUT:
     RETVAL
