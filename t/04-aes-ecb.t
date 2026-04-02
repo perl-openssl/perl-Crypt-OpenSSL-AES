@@ -32,7 +32,7 @@ my %key = (
           '256' => '1797465b474b7a1891710e98e02d0b5327cb5f42cd724d0f56a00f5dda221838'
         );
 
-# Following data was encrypted with Crypt::Mode::EBC
+# Following data was encrypted with Crypt::Mode::ECB
 my %encrypted = (
         "128" => [
                     'yGcevNJm3KI6M34mMwhloQ==', # no padding
