@@ -78,7 +78,6 @@ my %WriteMakefileArgs = (
     "XSLoader" => 0
   },
   "TEST_REQUIRES" => {
-    "Crypt::CBC" => "3.07",
     "Crypt::OpenSSL::Guess" => "0.10",
     "Crypt::URandom" => 0,
     "Digest::SHA" => 0,
@@ -97,7 +96,6 @@ my %WriteMakefileArgs = (
 );
 
 my %FallbackPrereqs = (
-  "Crypt::CBC" => "3.07",
   "Crypt::OpenSSL::Guess" => "0.10",
   "Crypt::URandom" => 0,
   "Digest::SHA" => 0,
