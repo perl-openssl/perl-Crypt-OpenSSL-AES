@@ -2,6 +2,28 @@ Revision history for Perl extension Crypt::OpenSSL::AES.
 
 {{$NEXT}}
 
+0.23 -- Fri Apr 03 11:37:17 ADT 2026
+
+    [Deprecation Notice]
+    - OpenSSL versions below 0.9.8 will not be supported in an upcoming release.
+    - It will likely be removed in the next production release.
+
+    [Updates since 0.21]
+    - Release 0.22 as a production release
+    - A fairly large list of commits.
+    - Thanks to Joe Schaefer (@joesuf4) for prompting the release.
+    - Fix type casting for plaintext in AES decryption (@joesuf4)
+    - Allow encryption and decryption of zero length data
+    - tests: add additional tests and enable strict and warnings
+    - tests: Modernize the module new syntax
+    - Properly free memory in the event of an error
+    - Add checks to ensure the module is not cloned across threads
+    - A fair number of miscelaneous cleanups
+    - Verify that the IV is the correct length
+    - Add a check for fips mode and method to enable
+    - Replace static cipher getters with EVP_CIPHER_fetch()
+    - Re-initialize EVP Context Between Calls to encrypt or decrypt
+
 0.22 -- Thu Apr 02 22:25:09 ADT 2026
 
     [Deprecation Notice]
