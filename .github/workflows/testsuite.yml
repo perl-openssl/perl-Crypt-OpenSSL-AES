@@ -35,8 +35,8 @@ jobs:
         uses: perl-actions/install-with-cpm@v1
         with:
           cpanfile: "cpanfile"
-      - name: Install Crypt::CBC
-        run: cpm install -v --without-test Crypt::CBC
+          install: |
+            Crypt::CBC
       - name: Makefile.PL
         run: perl -I$(pwd) Makefile.PL
       - run: make && prove -wbvm t/*.t
@@ -62,8 +62,8 @@ jobs:
         uses: perl-actions/install-with-cpm@v1
         with:
           cpanfile: "cpanfile"
-      - name: Install Crypt::CBC
-        run: cpm install Crypt::CBC
+          install: |
+            Crypt::CBC
       - name: Build
         run: |
           perl -I$(pwd) Makefile.PL
@@ -140,8 +140,8 @@ jobs:
         uses: perl-actions/install-with-cpm@v1
         with:
           cpanfile: "cpanfile"
-      - name: Install Crypt::CBC
-        run: cpm install Crypt::CBC
+          install: |
+            Crypt::CBC
       - name: Makefile.PL
         run: perl -I$(pwd) Makefile.PL
       - run: make && prove -wbvm t/*.t
