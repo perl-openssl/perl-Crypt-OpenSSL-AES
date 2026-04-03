@@ -56,7 +56,7 @@
          "version" : "0.22"
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://rt.cpan.org/Public/Dist/Display.html?Name=Crypt-OpenSSL-AES"
