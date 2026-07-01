@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: openssl version
       - run: perl -V
       - name: uses install-with-cpm
@@ -53,7 +53,7 @@ jobs:
     container: debian:bookworm
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: |
           apt-get update
@@ -124,7 +124,7 @@ jobs:
 
     container: ${{ matrix.os-version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies using apt-get
         if: ${{ startsWith(matrix.os-version, 'debian:') }}
         run: |
@@ -188,7 +188,7 @@ jobs:
     container: perldocker/perl-tester:${{ matrix.perl-version }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: openssl version
       - run: perl -V
       - name: Deps for testing
@@ -221,7 +221,7 @@ jobs:
         perl-version: [latest]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up Perl
         run: |
           # skip installing perl if it is already installed.
@@ -267,7 +267,7 @@ jobs:
             openssl_prefix: HOMEBREW
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install Homebrew OpenSSL
         if: ${{ matrix.openssl_prefix == 'HOMEBREW' }}
         run: brew install openssl@3
